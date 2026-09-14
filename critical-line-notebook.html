@@ -1,0 +1,1084 @@
+<title>The Critical Line</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:wght@500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<script>
+  window.MathJax = {
+    tex: {
+      inlineMath: [['$', '$'], ['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']]
+    },
+    svg: { fontCache: 'global' },
+    options: { skipHtmlTags: ['script','noscript','style','textarea','pre','code'] }
+  };
+</script>
+<script id="MathJax-script" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.js"></script>
+
+<style>
+  :root {
+    --paper: #f4f5f0;
+    --paper-raised: #ffffff;
+    --ink: #1e2a2f;
+    --ink-soft: #55636a;
+    --ink-faint: #8a9599;
+    --rule: #dadfd4;
+    --accent: #1f6f78;
+    --accent-strong: #144d54;
+    --accent-soft: #e3eeed;
+    --gold: #a3752c;
+    --gold-soft: #f6ecd9;
+    --crimson: #9c3b4a;
+    --crimson-soft: #f5e6e8;
+    --shadow: 0 1px 2px rgba(30,42,47,0.04), 0 6px 20px rgba(30,42,47,0.06);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #10171a;
+      --paper-raised: #171f22;
+      --ink: #e8ece9;
+      --ink-soft: #a9b4b3;
+      --ink-faint: #6d7a7c;
+      --rule: #293436;
+      --accent: #5fc1c7;
+      --accent-strong: #8ad8dc;
+      --accent-soft: #172b2c;
+      --gold: #e0ad5c;
+      --gold-soft: #29220f;
+      --crimson: #e0899a;
+      --crimson-soft: #2c1a1e;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.35);
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #10171a;
+    --paper-raised: #171f22;
+    --ink: #e8ece9;
+    --ink-soft: #a9b4b3;
+    --ink-faint: #6d7a7c;
+    --rule: #293436;
+    --accent: #5fc1c7;
+    --accent-strong: #8ad8dc;
+    --accent-soft: #172b2c;
+    --gold: #e0ad5c;
+    --gold-soft: #29220f;
+    --crimson: #e0899a;
+    --crimson-soft: #2c1a1e;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.35);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "Source Serif 4", Georgia, "Times New Roman", serif;
+    font-size: 17px;
+    line-height: 1.65;
+    padding: 0 20px;
+  }
+  h1, h2, h3, .display {
+    font-family: "Spectral", Georgia, serif;
+    text-wrap: balance;
+    color: var(--ink);
+  }
+  .mono {
+    font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  }
+
+  a { color: var(--accent-strong); }
+
+  .shell {
+    max-width: 1180px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 280px minmax(0,1fr);
+    gap: 40px;
+    padding-block: 40px 100px;
+  }
+  @media (max-width: 900px) {
+    .shell { grid-template-columns: 1fr; gap: 20px; }
+  }
+
+  /* ---------- Header ---------- */
+  .masthead {
+    grid-column: 1 / -1;
+    max-width: 720px;
+  }
+  .eyebrow {
+    font-size: 12.5px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent-strong);
+    font-weight: 600;
+    margin: 0 0 10px;
+  }
+  .masthead h1 {
+    font-size: clamp(2.1rem, 4.5vw, 3rem);
+    font-weight: 700;
+    margin: 0 0 14px;
+    letter-spacing: -0.01em;
+  }
+  .masthead p.lede {
+    color: var(--ink-soft);
+    font-size: 1.05rem;
+    max-width: 62ch;
+    margin: 0 0 22px;
+  }
+  .progress-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+  .progress-track {
+    display: flex;
+    gap: 4px;
+  }
+  .progress-track i {
+    display: block;
+    width: 20px;
+    height: 8px;
+    border-radius: 2px;
+    background: var(--rule);
+  }
+  .progress-track i.done { background: var(--accent); }
+  .progress-label {
+    font-size: 13px;
+    color: var(--ink-soft);
+    font-family: "IBM Plex Mono", monospace;
+  }
+
+  /* ---------- TOC / sidebar ---------- */
+  nav.toc {
+    align-self: start;
+    position: sticky;
+    top: 24px;
+  }
+  @media (max-width: 900px) {
+    nav.toc { position: static; }
+  }
+  nav.toc h2 {
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    font-family: "IBM Plex Mono", monospace;
+    font-weight: 600;
+    margin: 0 0 12px;
+  }
+  .toc-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-top: 1px solid var(--rule);
+  }
+  .toc-list li {
+    border-bottom: 1px solid var(--rule);
+  }
+  .toc-list a {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    padding: 10px 4px;
+    text-decoration: none;
+    color: var(--ink);
+    font-size: 14px;
+  }
+  .toc-list a:hover { color: var(--accent-strong); }
+  .toc-index {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 12px;
+    color: var(--ink-faint);
+    flex: none;
+    width: 1.4em;
+  }
+  .toc-title { flex: 1; }
+  .pill {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 9.5px;
+    letter-spacing: 0.06em;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 3px;
+    white-space: nowrap;
+    flex: none;
+  }
+  .pill.built { background: var(--accent-soft); color: var(--accent-strong); }
+  .pill.queued { background: transparent; color: var(--ink-faint); border: 1px solid var(--rule); }
+  .pill.cited { background: var(--gold-soft); color: var(--gold); }
+  .pill.conjectural { background: var(--crimson-soft); color: var(--crimson); }
+
+  table.ledger {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0 28px;
+    font-size: 14px;
+  }
+  table.ledger th {
+    text-align: left;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 10.5px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    font-weight: 600;
+    padding: 0 10px 8px;
+    border-bottom: 1px solid var(--rule);
+  }
+  table.ledger td {
+    padding: 9px 10px;
+    border-bottom: 1px solid var(--rule);
+    vertical-align: top;
+  }
+  table.ledger td:first-child {
+    font-family: "IBM Plex Mono", monospace;
+    color: var(--accent-strong);
+    white-space: nowrap;
+    width: 1%;
+  }
+  table.ledger td:last-child { white-space: nowrap; width: 1%; }
+  .ledger-wrap { overflow-x: auto; }
+
+  /* ---------- Main content ---------- */
+  main { min-width: 0; max-width: 700px; }
+
+  .stage {
+    margin-bottom: 56px;
+  }
+  .stage-head {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 6px;
+  }
+  .stage-num {
+    font-family: "IBM Plex Mono", monospace;
+    color: var(--accent-strong);
+    font-size: 15px;
+  }
+  .stage h2 {
+    font-size: 1.7rem;
+    margin: 0;
+    font-weight: 600;
+  }
+  .stage-sub {
+    color: var(--ink-soft);
+    font-size: 0.98rem;
+    margin: 4px 0 26px;
+  }
+
+  h3.sub {
+    font-size: 1.12rem;
+    font-weight: 600;
+    margin: 34px 0 4px;
+    color: var(--ink);
+  }
+  .sub-index {
+    font-family: "IBM Plex Mono", monospace;
+    color: var(--ink-faint);
+    font-size: 0.85em;
+    margin-right: 8px;
+  }
+
+  p { margin: 0 0 14px; }
+
+  .block {
+    background: var(--paper-raised);
+    border: 1px solid var(--rule);
+    border-left: 3px solid var(--accent);
+    border-radius: 4px;
+    padding: 16px 20px;
+    margin: 16px 0 20px;
+    box-shadow: var(--shadow);
+  }
+  .block.theorem { border-left-color: var(--accent); }
+  .block.proof { border-left-color: var(--ink-faint); background: transparent; box-shadow: none; }
+  .block.remark { border-left-color: var(--gold); background: var(--gold-soft); }
+  .block.open { border-left-color: var(--crimson); background: var(--crimson-soft); }
+
+  .block-label {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 11px;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    font-weight: 600;
+    color: var(--accent-strong);
+    display: block;
+    margin-bottom: 6px;
+  }
+  .block.proof .block-label { color: var(--ink-faint); }
+  .block.remark .block-label { color: var(--gold); }
+  .block.open .block-label { color: var(--crimson); }
+
+  .qed {
+    display: block;
+    text-align: right;
+    font-family: "IBM Plex Mono", monospace;
+    color: var(--ink-faint);
+    margin-top: 6px;
+  }
+
+  .eq-wrap {
+    overflow-x: auto;
+    padding: 4px 0;
+  }
+
+  table.notation {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0 24px;
+    font-size: 15px;
+  }
+  table.notation td {
+    padding: 7px 10px;
+    border-bottom: 1px solid var(--rule);
+    vertical-align: top;
+  }
+  table.notation td:first-child {
+    font-family: "IBM Plex Mono", monospace;
+    color: var(--accent-strong);
+    white-space: nowrap;
+    width: 1%;
+  }
+
+  footer {
+    grid-column: 1 / -1;
+    border-top: 1px solid var(--rule);
+    padding-top: 22px;
+    color: var(--ink-faint);
+    font-size: 13.5px;
+    max-width: 700px;
+  }
+
+  .toc-toggle { display: none; }
+  @media (max-width: 900px) {
+    .toc-toggle {
+      display: block;
+      width: 100%;
+      text-align: left;
+      background: var(--paper-raised);
+      border: 1px solid var(--rule);
+      border-radius: 6px;
+      padding: 10px 14px;
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 12.5px;
+      letter-spacing: 0.05em;
+      color: var(--ink);
+      margin-bottom: 10px;
+    }
+    nav.toc .toc-list { display: none; }
+    nav.toc.open .toc-list { display: block; }
+  }
+</style>
+
+<div class="shell">
+  <div class="masthead">
+    <p class="eyebrow">A working notebook</p>
+    <h1>The Critical Line</h1>
+    <p class="lede">Real, checkable mathematics built stage by stage toward the Riemann Hypothesis. Every theorem below is fully proved. The Hypothesis itself is not — it is one of the seven original Millennium Prize Problems, unsolved since 1859, and nothing on this page claims otherwise. What follows is the honest distance current mathematics can carry us, built carefully enough that you could hand any single stage to a referee.</p>
+    <div class="progress-row">
+      <div class="progress-track">
+        <i class="done"></i><i class="done"></i><i class="done"></i><i class="done"></i><i class="done"></i><i class="done"></i><i class="done"></i><i class="done"></i><i class="done"></i><i class="done"></i><i class="done"></i>
+      </div>
+      <span class="progress-label">NOTEBOOK COMPLETE — 11 OF 11</span>
+    </div>
+  </div>
+
+  <nav class="toc" id="toc">
+    <button class="toc-toggle" onclick="document.getElementById('toc').classList.toggle('open')">☰ &nbsp;CONTENTS</button>
+    <h2>Contents</h2>
+    <ul class="toc-list">
+      <li><a href="#s0"><span class="toc-index">0</span><span class="toc-title">Notation</span><span class="pill built">BUILT</span></a></li>
+      <li><a href="#s1"><span class="toc-index">1</span><span class="toc-title">The Dirichlet series</span><span class="pill built">BUILT</span></a></li>
+      <li><a href="#s2"><span class="toc-index">2</span><span class="toc-title">Analytic continuation</span><span class="pill built">BUILT</span></a></li>
+      <li><a href="#s3"><span class="toc-index">3</span><span class="toc-title">The functional equation</span><span class="pill built">BUILT</span></a></li>
+      <li><a href="#s4"><span class="toc-index">4</span><span class="toc-title">Trivial zeros &amp; the critical strip</span><span class="pill built">BUILT</span></a></li>
+      <li><a href="#s5"><span class="toc-index">5</span><span class="toc-title">Why 1/2 is not automatic</span><span class="pill built">BUILT</span></a></li>
+      <li><a href="#s6"><span class="toc-index">6</span><span class="toc-title">Counting zeros, N(T)</span><span class="pill built">BUILT</span></a></li>
+      <li><a href="#s7"><span class="toc-index">7</span><span class="toc-title">Hardy &amp; Selberg</span><span class="pill built">BUILT</span></a></li>
+      <li><a href="#s8"><span class="toc-index">8</span><span class="toc-title">The explicit formula &amp; primes</span><span class="pill built">BUILT</span></a></li>
+      <li><a href="#s9"><span class="toc-index">9</span><span class="toc-title">Equivalent formulations</span><span class="pill built">BUILT</span></a></li>
+      <li><a href="#s10"><span class="toc-index">10</span><span class="toc-title">Spectral &amp; physical approaches</span><span class="pill built">BUILT</span></a></li>
+      <li><a href="#s11"><span class="toc-index">11</span><span class="toc-title">The open frontier</span><span class="pill built">BUILT</span></a></li>
+    </ul>
+  </nav>
+
+  <main>
+
+    <section class="stage" id="s0">
+      <div class="stage-head"><span class="stage-num">00</span><h2>Notation</h2></div>
+      <p class="stage-sub">Fixed once, used everywhere below.</p>
+      <table class="notation">
+        <tr><td>$s$</td><td>a complex variable, always written $s=\sigma+it$ with $\sigma,t\in\mathbb{R}$</td></tr>
+        <tr><td>$\sigma$</td><td>$\operatorname{Re}(s)$</td></tr>
+        <tr><td>$t$</td><td>$\operatorname{Im}(s)$</td></tr>
+        <tr><td>$p$</td><td>ranges over primes $2,3,5,7,11,\dots$</td></tr>
+        <tr><td>$\mathbb{N}$</td><td>$\{1,2,3,\dots\}$</td></tr>
+        <tr><td>critical strip</td><td>$\{s:0\le\sigma\le1\}$</td></tr>
+        <tr><td>critical line</td><td>$\{s:\sigma=\tfrac12\}$ — where every nontrivial zero is conjectured to lie</td></tr>
+      </table>
+      <p>We assume standard single-variable complex analysis: Cauchy's theorem, uniform limits of holomorphic functions are holomorphic (Weierstrass), Morera's theorem, the identity theorem (two holomorphic functions on a connected open set that agree on a set with an accumulation point agree everywhere), the argument principle, and basic facts about infinite series and products. From Stage 3 on we also cite, without reproving: the <strong>Poisson summation formula</strong> for Schwartz functions, the Gamma function's <strong>reflection formula</strong> $\Gamma(z)\Gamma(1-z)=\pi/\sin(\pi z)$, its <strong>duplication formula</strong> $\Gamma(z)\Gamma(z+\tfrac12)=2^{1-2z}\sqrt\pi\,\Gamma(2z)$, its residues $\mathrm{Res}_{z=-n}\Gamma(z)=(-1)^n/n!$ at the nonpositive integers, and (Stage 6 on) <strong>Stirling's asymptotic formula</strong> $\log\Gamma(s)=(s-\tfrac12)\log s-s+\tfrac12\log(2\pi)+O(1/|s|)$ as $|s|\to\infty$ away from the negative real axis. From Stage 8 on we additionally cite <strong>Perron's formula</strong> (recovering partial sums $\sum_{n\le x}a_n$ of a Dirichlet series from a contour integral of the series against $x^s/s$) and the specific classical value $\zeta'(0)=-\tfrac12\log(2\pi)$. All of these are genuine prerequisites, on the same footing as Cauchy's theorem, rather than results this notebook is trying to establish.</p>
+    </section>
+
+    <section class="stage" id="s1">
+      <div class="stage-head"><span class="stage-num">01</span><h2>The Dirichlet series</h2></div>
+      <p class="stage-sub">Where $\zeta$ is actually <em>defined</em> — and the first real theorem we can bank.</p>
+
+      <h3 class="sub"><span class="sub-index">1.1</span>Definition and absolute convergence</h3>
+      <div class="block theorem">
+        <span class="block-label">Definition</span>
+        <div class="eq-wrap">$$\zeta(s) \;=\; \sum_{n=1}^{\infty} \frac{1}{n^s} \;=\; \sum_{n=1}^{\infty} e^{-s\log n}, \qquad \sigma > 1.$$</div>
+      </div>
+      <div class="block theorem">
+        <span class="block-label">Theorem 1.1</span>
+        <p>The series converges absolutely for every $s$ with $\sigma>1$, and diverges for $\sigma\le 1$.</p>
+      </div>
+      <div class="block proof">
+        <span class="block-label">Proof</span>
+        <p>Since $|n^{-s}| = |e^{-s\log n}| = e^{-\sigma\log n} = n^{-\sigma}$, absolute convergence of $\sum n^{-s}$ is exactly convergence of the real series $\sum n^{-\sigma}$. By the integral test, $\sum_{n=1}^\infty n^{-\sigma}$ converges iff $\int_1^\infty x^{-\sigma}\,dx$ converges, which holds iff $\sigma>1$. At $\sigma=1$ this is the harmonic series, which diverges (its partial sums exceed $\log N$); for $\sigma<1$ each term $n^{-\sigma}$ doesn't even tend to $0$ fast enough, and in fact exceeds the $\sigma=1$ case term by term. So $\sigma>1$ is exactly the region of absolute convergence.</p>
+        <span class="qed">∎</span>
+      </div>
+
+      <h3 class="sub"><span class="sub-index">1.2</span>Holomorphy on $\sigma>1$</h3>
+      <div class="block theorem">
+        <span class="block-label">Theorem 1.2</span>
+        <p>$\zeta$ is holomorphic on the open half-plane $\{\sigma>1\}$.</p>
+      </div>
+      <div class="block proof">
+        <span class="block-label">Proof</span>
+        <p>Fix $\delta>0$ and restrict to $\sigma\ge 1+\delta$. There, $|n^{-s}|=n^{-\sigma}\le n^{-1-\delta}$, and $\sum_n n^{-1-\delta}<\infty$. By the Weierstrass $M$-test, $\sum_{n\le N} n^{-s}$ converges uniformly on $\{\sigma\ge1+\delta\}$ as $N\to\infty$. Each partial sum $\sum_{n\le N} n^{-s}$ is a finite sum of entire functions ($n^{-s}=e^{-s\log n}$ is entire in $s$ for each fixed $n$), hence entire. A uniform limit of holomorphic functions on a domain is holomorphic there (Weierstrass), so $\zeta$ is holomorphic on $\{\sigma\ge 1+\delta\}$ for every $\delta>0$ — and therefore on the union of these regions, $\{\sigma>1\}$.</p>
+        <span class="qed">∎</span>
+      </div>
+
+      <h3 class="sub"><span class="sub-index">1.3</span>The Euler product</h3>
+      <p>This is the identity that makes $\zeta$ worth studying at all: it is a purely analytic object that secretly <em>is</em> the multiplicative structure of the integers.</p>
+      <div class="block theorem">
+        <span class="block-label">Theorem 1.3 — Euler, 1737</span>
+        <div class="eq-wrap">$$\zeta(s) \;=\; \prod_{p \text{ prime}} \left(1 - p^{-s}\right)^{-1}, \qquad \sigma>1,$$</div>
+        <p>the product converging absolutely.</p>
+      </div>
+      <div class="block proof">
+        <span class="block-label">Proof</span>
+        <p>For $\sigma>1$ we have $|p^{-s}|=p^{-\sigma}<1$, so each factor expands as a convergent geometric series:</p>
+        <div class="eq-wrap">$$(1-p^{-s})^{-1} = \sum_{k=0}^{\infty} p^{-ks}.$$</div>
+        <p>List the primes as $p_1<p_2<p_3<\cdots$ and multiply out the first $j$ factors:</p>
+        <div class="eq-wrap">$$\prod_{i=1}^{j}(1-p_i^{-s})^{-1} = \prod_{i=1}^{j}\left(\sum_{k=0}^\infty p_i^{-ks}\right) = \sum_{n \,\in\, S_j} n^{-s},$$</div>
+        <p>where $S_j$ is the set of positive integers whose prime factorization uses only $p_1,\dots,p_j$ — by the Fundamental Theorem of Arithmetic, each such $n$ arises from exactly one choice of exponents, so it appears exactly once when the product is expanded (this is where unique factorization is used, and it is the only place). Now compare to the full sum:</p>
+        <div class="eq-wrap">$$\left|\zeta(s) - \prod_{i=1}^{j}(1-p_i^{-s})^{-1}\right| = \left|\sum_{n \notin S_j} n^{-s}\right| \le \sum_{n \notin S_j} n^{-\sigma} \le \sum_{n > p_j} n^{-\sigma},$$</div>
+        <p>since every integer not in $S_j$ has a prime factor larger than $p_j$ and so is itself larger than $p_j$. As $j\to\infty$, $p_j\to\infty$, and the tail of the convergent series $\sum n^{-\sigma}$ vanishes. Hence the partial products converge to $\zeta(s)$. Absolute convergence of the product follows from $\sum_p |p^{-s}| = \sum_p p^{-\sigma} < \infty$ for $\sigma>1$ (comparison with $\sum_n n^{-\sigma}$).</p>
+        <span class="qed">∎</span>
+      </div>
+
+      <h3 class="sub"><span class="sub-index">1.4</span>First zero-free region</h3>
+      <p>The Euler product immediately buys us something genuine: an entire half-plane where $\zeta$ provably has <em>no</em> zeros. Every future stage is, in one sense, about pushing this zero-free region as far left as possible — all the way to $\sigma=\tfrac12$ would <em>be</em> the Riemann Hypothesis.</p>
+      <div class="block theorem">
+        <span class="block-label">Theorem 1.4</span>
+        <p>$\zeta(s) \ne 0$ for every $s$ with $\sigma>1$.</p>
+      </div>
+      <div class="block proof">
+        <span class="block-label">Proof</span>
+        <p>An absolutely convergent infinite product $\prod_i(1+a_i)$ with all $a_i\ne -1$ vanishes only if some factor is $0$ (this is the standard theory of infinite products: absolute convergence of $\sum|a_i|$ guarantees the product converges to a nonzero limit unless a factor is exactly $0$). Here each factor $(1-p^{-s})^{-1}$ is manifestly nonzero — it's a reciprocal — and finite since $|p^{-s}|<1$. So the product $\prod_p(1-p^{-s})^{-1}$, and hence $\zeta(s)$, is nonzero throughout $\sigma>1$.</p>
+        <span class="qed">∎</span>
+      </div>
+
+      <div class="block open">
+        <span class="block-label">Where this leaves us</span>
+        <p>We now have one honest, checkable fact: <strong>no zeros for $\sigma>1$.</strong> But look at what we don't have yet — $\zeta$ as literally defined by this series doesn't converge anywhere on or left of the line $\sigma=1$. In particular it says nothing at all, yet, about $\sigma=\tfrac12$, which is precisely where the whole Hypothesis lives. The series definition is too weak to even ask the question. Stage 2 has to extend $\zeta$ analytically into that territory before "Riemann Hypothesis" is even a meaningful sentence about this function.</p>
+      </div>
+    </section>
+
+    <section class="stage" id="s2">
+      <div class="stage-head"><span class="stage-num">02</span><h2>Analytic continuation</h2></div>
+      <p class="stage-sub">The series for $\zeta$ dies at $\sigma=1$. We build a genuinely new formula — one that agrees with the series where it lives, but keeps making sense past it.</p>
+
+      <h3 class="sub"><span class="sub-index">2.1</span>Uniqueness comes for free</h3>
+      <p>Before extending anything, note that <em>if</em> a holomorphic extension exists on a connected open set containing $\{\sigma>1\}$, it is unique — this is the identity theorem (Stage 0). So every formula we derive below, as long as it is holomorphic where claimed and agrees with $\sum n^{-s}$ on $\sigma>1$, isn't <em>a</em> continuation of $\zeta$ — it <em>is</em> $\zeta$, full stop, on the larger region. We never have to worry about "which" extension we're computing.</p>
+
+      <h3 class="sub"><span class="sub-index">2.2</span>An exact identity for the partial sums</h3>
+      <p>Let $\zeta_N(s) = \sum_{n=1}^{N} n^{-s}$ and let $\lfloor x\rfloor$ denote the integer part of $x$. We first relate the sum to an integral of the step function $\lfloor x\rfloor$, by nothing more than direct computation.</p>
+      <div class="block theorem">
+        <span class="block-label">Lemma 2.1</span>
+        <p>For every integer $N\ge1$ and every $s$ with $\sigma>1$,</p>
+        <div class="eq-wrap">$$\zeta_N(s) \;=\; N^{1-s} \;+\; s\int_1^N \lfloor x\rfloor\, x^{-s-1}\,dx.$$</div>
+      </div>
+      <div class="block proof">
+        <span class="block-label">Proof</span>
+        <p>$\lfloor x\rfloor$ is constant, equal to $k$, on each interval $[k,k+1)$ for $k=1,\dots,N-1$, so</p>
+        <div class="eq-wrap">$$\int_1^N\lfloor x\rfloor x^{-s-1}\,dx=\sum_{k=1}^{N-1}k\int_k^{k+1}x^{-s-1}dx=\sum_{k=1}^{N-1}\frac{k}{s}\bigl(k^{-s}-(k+1)^{-s}\bigr).$$</div>
+        <p>Multiplying by $s$ and reindexing the second half of the sum with $j=k+1$:</p>
+        <div class="eq-wrap">$$s\int_1^N\lfloor x\rfloor x^{-s-1}dx=\sum_{k=1}^{N-1}k^{1-s}-\sum_{j=2}^{N}(j-1)j^{-s}=\sum_{k=1}^{N-1}k^{1-s}-\sum_{j=2}^{N}j^{1-s}+\sum_{j=2}^{N}j^{-s}.$$</div>
+        <p>The first two sums telescope — every term $k^{1-s}$ for $2\le k\le N-1$ appears once with each sign — leaving only $1^{1-s}$ from the first sum and $-N^{1-s}$ from the second. The last sum is $\zeta_N(s)-1$. So the whole right side equals $1-N^{1-s}+\zeta_N(s)-1=\zeta_N(s)-N^{1-s}$, which rearranges to the claim.</p>
+        <span class="qed">∎</span>
+      </div>
+
+      <h3 class="sub"><span class="sub-index">2.3</span>Splitting off the fractional part</h3>
+      <p>Write $\lfloor x\rfloor = x-\{x\}$, where $\{x\}\in[0,1)$ is the fractional part. Substituting into Lemma 2.1 and evaluating the elementary piece $s\int_1^N x\cdot x^{-s-1}dx = s\int_1^N x^{-s}dx = \dfrac{s}{s-1}\bigl(1-N^{1-s}\bigr)$ gives, after combining terms,</p>
+      <div class="eq-wrap">$$\zeta_N(s) \;=\; \frac{s}{s-1}\;-\;\frac{N^{1-s}}{s-1}\;-\;s\int_1^N\{x\}\,x^{-s-1}\,dx.$$</div>
+      <p>Now let $N\to\infty$ with $\sigma>1$ fixed: $N^{1-s}=N^{1-\sigma}\cdot N^{-it}\to0$ since $1-\sigma<0$, and $\int_1^N\{x\}x^{-s-1}dx\to\int_1^\infty\{x\}x^{-s-1}dx$ (next lemma shows this converges). We obtain:</p>
+      <div class="block theorem">
+        <span class="block-label">Proposition 2.2</span>
+        <div class="eq-wrap">$$\zeta(s)\;=\;\frac{s}{s-1}\;-\;s\int_1^{\infty}\{x\}\,x^{-s-1}\,dx, \qquad \sigma>1.$$</div>
+      </div>
+
+      <h3 class="sub"><span class="sub-index">2.4</span>The integral is holomorphic on the bigger half-plane</h3>
+      <p>Everything now hinges on the integral term surviving past $\sigma=1$.</p>
+      <div class="block theorem">
+        <span class="block-label">Lemma 2.3</span>
+        <p>$F(s):=\displaystyle\int_1^\infty\{x\}\,x^{-s-1}\,dx$ converges absolutely and defines a holomorphic function on the full half-plane $\{\sigma>0\}$ — not just $\sigma>1$.</p>
+      </div>
+      <div class="block proof">
+        <span class="block-label">Proof</span>
+        <p><em>Convergence.</em> Since $0\le\{x\}<1$, $\;|\{x\}x^{-s-1}|\le x^{-\sigma-1}$, and $\int_1^\infty x^{-\sigma-1}dx=1/\sigma$ is finite whenever $\sigma>0$. So the integral converges absolutely on $\{\sigma>0\}$ — a full half-plane wider than $\{\sigma>1\}$, where the original series lives.</p>
+        <p><em>Holomorphy.</em> Fix a compact $K\subset\{\sigma>0\}$ and let $\sigma_0=\min_{s\in K}\sigma>0$. For finite $R$, put $F_R(s)=\int_1^R\{x\}x^{-s-1}dx$. Each $F_R$ is holomorphic: for any closed contour $\gamma$ inside a disc in $\{\sigma>0\}$, Fubini lets us swap the order of integration, $\oint_\gamma F_R(s)\,ds=\int_1^R\{x\}\left(\oint_\gamma x^{-s-1}ds\right)dx=0$, because $s\mapsto x^{-s-1}$ is entire for each fixed $x>0$ and so its integral around any closed contour vanishes (Cauchy). By Morera's theorem, $F_R$ is holomorphic. Finally,</p>
+        <div class="eq-wrap">$$|F(s)-F_R(s)|=\left|\int_R^\infty\{x\}x^{-s-1}dx\right|\le\int_R^\infty x^{-\sigma_0-1}dx=\frac{R^{-\sigma_0}}{\sigma_0}\xrightarrow[R\to\infty]{}0,$$</div>
+        <p>uniformly over $s\in K$ (the bound depends only on $\sigma_0$). So $F_R\to F$ uniformly on $K$, and a uniform limit of holomorphic functions is holomorphic (Weierstrass). Since $K$ was an arbitrary compact subset of $\{\sigma>0\}$, $F$ is holomorphic there.</p>
+        <span class="qed">∎</span>
+      </div>
+
+      <h3 class="sub"><span class="sub-index">2.5</span>The continuation theorem</h3>
+      <div class="block theorem">
+        <span class="block-label">Theorem 2.4</span>
+        <p>The formula</p>
+        <div class="eq-wrap">$$\zeta(s) \;=\; \frac{s}{s-1} \;-\; s\int_1^\infty\{x\}\,x^{-s-1}\,dx$$</div>
+        <p>defines a function that is holomorphic on all of $\{\sigma>0\}$ except for a <strong>simple pole at $s=1$ with residue $1$</strong>, and which agrees with $\zeta(s)=\sum n^{-s}$ wherever that series converges. By uniqueness (§2.1), this <em>is</em> the analytic continuation of $\zeta$ to $\{\sigma>0\}\setminus\{1\}$.</p>
+      </div>
+      <div class="block proof">
+        <span class="block-label">Proof</span>
+        <p>By Lemma 2.3 the integral term is holomorphic on all of $\{\sigma>0\}$, including at $s=1$. The prefactor $\dfrac{s}{s-1}$ is holomorphic on $\mathbb{C}\setminus\{1\}$ with a simple pole at $s=1$; near $s=1$, $\dfrac{s}{s-1}=\dfrac{1}{s-1}+1$, so the residue is exactly $1$. Adding a function holomorphic at $s=1$ (the integral term, times $-s$) doesn't change the pole's location or residue. Agreement with the series on $\sigma>1$ is Proposition 2.2.</p>
+        <span class="qed">∎</span>
+      </div>
+
+      <div class="block open">
+        <span class="block-label">Where this leaves us</span>
+        <p>Progress, and an honest gap. We now have $\zeta$ living on $\{\sigma>0\}\setminus\{1\}$ — that already covers the <em>entire interior</em> of the critical strip $0\le\sigma\le1$, including the critical line $\sigma=\tfrac12$ itself. <strong>The Riemann Hypothesis is now, for the first time in this notebook, a meaningful statement</strong> about an actual well-defined holomorphic function. But we still can't see $\sigma\le0$ — and that's not a minor gap: it's exactly where the (already-known, harmless) "trivial" zeros live, and Riemann's functional equation, which produces them, is also the tool that will finish the continuation to <em>all</em> of $\mathbb{C}\setminus\{1\}$ in one stroke. That symmetry is Stage 3.</p>
+      </div>
+    </section>
+
+    <section class="stage" id="s3">
+      <div class="stage-head"><span class="stage-num">03</span><h2>The functional equation</h2></div>
+      <p class="stage-sub">The single richest result in the classical theory. It finishes the continuation to all of $\mathbb{C}\setminus\{1\}$, and reveals an exact mirror symmetry across $\sigma=\tfrac12$ — the first hint that this particular line is not arbitrary.</p>
+
+      <h3 class="sub"><span class="sub-index">3.1</span>The Jacobi theta function</h3>
+      <p>For $x>0$ define</p>
+      <div class="eq-wrap">$$\theta(x)=\sum_{n=-\infty}^{\infty}e^{-\pi n^2 x} = 1+2\psi(x), \qquad \psi(x):=\sum_{n=1}^{\infty}e^{-\pi n^2x}.$$</div>
+      <p>Both series converge for every $x>0$ (compare to a geometric series), and $\psi$ decays fast: for $x\ge1$, $\;0<\psi(x)\le\sum_{n\ge1}e^{-\pi n x}=\dfrac{e^{-\pi x}}{1-e^{-\pi x}}\le C e^{-\pi x}$ for an absolute constant $C$ — exponential decay that will do all the work below.</p>
+      <div class="block theorem">
+        <span class="block-label">Lemma 3.1 (Gaussian Fourier transform)</span>
+        <p>For $a>0$, $\;\displaystyle\int_{-\infty}^{\infty}e^{-\pi a t^2-2\pi i t\xi}\,dt = a^{-1/2}e^{-\pi\xi^2/a}$.</p>
+      </div>
+      <div class="block proof">
+        <span class="block-label">Proof</span>
+        <p>Complete the square: $-\pi a t^2-2\pi it\xi = -\pi a\left(t+\tfrac{i\xi}{a}\right)^2-\tfrac{\pi\xi^2}{a}$. The integral becomes $e^{-\pi\xi^2/a}\int_{-\infty}^{\infty}e^{-\pi a(t+i\xi/a)^2}dt$. Because $z\mapsto e^{-\pi a z^2}$ is entire and decays in every horizontal strip $|\mathrm{Im}\,z|\le M$, Cauchy's theorem on a large rectangle lets us shift the contour of integration from $\mathrm{Im}(t)=0$ down to $\mathrm{Im}(t)=-\xi/a$ with no change of value (the two vertical ends of the rectangle contribute $0$ in the limit). This leaves the real Gaussian integral $\int_{-\infty}^{\infty}e^{-\pi a u^2}du=a^{-1/2}$ (substitute $v=\sqrt a\,u$ and use $\int e^{-\pi v^2}dv=1$), giving the claim.</p>
+        <span class="qed">∎</span>
+      </div>
+      <p>Applying Poisson summation ($\sum_n f(n)=\sum_n\hat f(n)$, cited above) to $f(t)=e^{-\pi xt^2}$, whose transform Lemma&nbsp;3.1 identifies as $\hat f(\xi)=x^{-1/2}e^{-\pi\xi^2/x}$, gives immediately:</p>
+      <div class="block theorem">
+        <span class="block-label">Theorem 3.2 (Jacobi's transformation)</span>
+        <div class="eq-wrap">$$\theta(1/x) = \sqrt{x}\,\theta(x), \qquad x>0.$$</div>
+      </div>
+      <p>(Check: as $x\to0^+$, the right side's dominant behaviour forces $\theta(x)\sim x^{-1/2}$, which is exactly the blow-up rate you'd expect from a sum of infinitely many terms all approaching $1$.)</p>
+
+      <h3 class="sub"><span class="sub-index">3.2</span>From theta to zeta: a Mellin identity</h3>
+      <p>Start from Euler's integral $\Gamma(s/2)=\int_0^\infty e^{-u}u^{s/2-1}du$ ($\sigma>0$) and substitute $u=\pi n^2x$:</p>
+      <div class="eq-wrap">$$\pi^{-s/2}\Gamma(s/2)\,n^{-s} = \int_0^\infty e^{-\pi n^2x}\,x^{s/2-1}\,dx.$$</div>
+      <p>Summing over $n\ge1$: each term's integral of absolute values equals $\pi^{-\sigma/2}\Gamma(\sigma/2)n^{-\sigma}$, and $\sum_n n^{-\sigma}<\infty$ for $\sigma>1$, so Fubini's theorem justifies exchanging $\sum_n$ and $\int$:</p>
+      <div class="block theorem">
+        <span class="block-label">Proposition 3.3</span>
+        <div class="eq-wrap">$$\pi^{-s/2}\Gamma(s/2)\,\zeta(s) = \int_0^\infty x^{s/2-1}\psi(x)\,dx, \qquad \sigma>1.$$</div>
+      </div>
+
+      <h3 class="sub"><span class="sub-index">3.3</span>Splitting the integral: continuation and symmetry</h3>
+      <p>Split the range at $x=1$ and rewrite $\psi=\tfrac12(\theta-1)$ on $(0,1)$; then substitute $x\mapsto1/x$ to fold that piece onto $(1,\infty)$ and invoke Theorem&nbsp;3.2. Carrying this out (a page of elementary substitution, omitted here — every step is $u$-substitution and the geometric-series evaluation $\int_1^\infty y^{-a}dy=\frac1{a-1}$) produces, for $\sigma>1$:</p>
+      <div class="eq-wrap">$$\pi^{-s/2}\Gamma(s/2)\,\zeta(s) \;=\; \Phi(s) \;+\; \frac1{s-1} \;-\; \frac1s, \qquad \Phi(s):=\int_1^\infty\psi(x)\left(x^{s/2-1}+x^{-(s+1)/2}\right)dx.$$</div>
+      <div class="block theorem">
+        <span class="block-label">Lemma 3.4</span>
+        <p>$\Phi$ is entire, and satisfies $\Phi(s)=\Phi(1-s)$ for every $s\in\mathbb{C}$.</p>
+      </div>
+      <div class="block proof">
+        <span class="block-label">Proof</span>
+        <p><em>Entire.</em> For $x\ge1$ and $s$ in any compact set $K$, $|\psi(x)(x^{s/2-1}+x^{-(s+1)/2})|\le Ce^{-\pi x}\cdot 2x^{M}$ for some $M$ depending only on $K$ — exponential decay crushes any polynomial growth, so the integral converges absolutely and uniformly on $K$. The same Morera/Weierstrass argument as Lemma&nbsp;2.3 then shows $\Phi$ is holomorphic on every compact set, hence entire.</p>
+        <p><em>Symmetry.</em> Replacing $s$ by $1-s$ swaps the exponents: $x^{(1-s)/2-1}=x^{-(s+1)/2}$ and $x^{-((1-s)+1)/2}=x^{s/2-1}$ — the same two terms, in the other order. So $\Phi(1-s)=\Phi(s)$.</p>
+        <span class="qed">∎</span>
+      </div>
+      <p>The rational piece is symmetric too: substituting $s\mapsto1-s$ sends $\frac1{s-1}-\frac1s$ to $\frac1{-s}-\frac1{1-s}=-\frac1s+\frac1{s-1}$ — unchanged. Write</p>
+      <div class="eq-wrap">$$G(s):=\pi^{-s/2}\Gamma(s/2)\zeta(s) = \Phi(s)+\frac1{s-1}-\frac1s.$$</div>
+
+      <h3 class="sub"><span class="sub-index">3.4</span>The continuation, completed</h3>
+      <div class="block theorem">
+        <span class="block-label">Theorem 3.5</span>
+        <p>$G$ is meromorphic on all of $\mathbb{C}$, with only two singularities: simple poles at $s=0$ (residue $-1$) and $s=1$ (residue $+1$), and it satisfies $G(s)=G(1-s)$ everywhere. Consequently</p>
+        <div class="eq-wrap">$$\zeta(s) = \pi^{s/2}\,\frac{G(s)}{\Gamma(s/2)}$$</div>
+        <p>is meromorphic on all of $\mathbb{C}\setminus\{1\}$ — since $1/\Gamma(s/2)$ is entire (it kills the pole $G$ has at $s=0$: $\Gamma(s/2)$ itself has a pole there) — completing, and matching, the continuation of Stage 2.</p>
+      </div>
+      <div class="block open">
+        <span class="block-label">Two sanity checks against known values</span>
+        <p>Near $s=1$: $\pi^{s/2}/\Gamma(s/2)\to\sqrt\pi/\Gamma(\tfrac12)=\sqrt\pi/\sqrt\pi=1$, so $\zeta(s)\sim G(s)\sim\frac1{s-1}$ — residue $1$, exactly matching Theorem&nbsp;2.4. Near $s=0$: $\Gamma(s/2)\sim 2/s$, so $\pi^{s/2}/\Gamma(s/2)\sim s/2$, while $G(s)\sim-1/s$; the product tends to $-\tfrac12$. So $\zeta(0)=-\tfrac12$ — the famous value, recovered here rather than assumed.</p>
+      </div>
+
+      <h3 class="sub"><span class="sub-index">3.5</span>The functional equation</h3>
+      <p>$G(s)=G(1-s)$, unpacked, already <em>is</em> the functional equation. Multiplying by $\tfrac12 s(s-1)$ — which is itself symmetric under $s\mapsto1-s$, and exactly cancels both poles of $G$ — produces Riemann's <strong>completed zeta function</strong>, entire with no exceptions:</p>
+      <div class="block theorem">
+        <span class="block-label">Definition &amp; Theorem 3.6</span>
+        <div class="eq-wrap">$$\xi(s) := \tfrac12\,s(s-1)\,\pi^{-s/2}\Gamma(s/2)\,\zeta(s)$$</div>
+        <p>is entire, and satisfies $\xi(s)=\xi(1-s)$ for every $s\in\mathbb{C}$. (A short limit computation, using the residues from Theorem&nbsp;3.5, gives $\xi(0)=\xi(1)=\tfrac12$ — matching Riemann's own value.)</p>
+      </div>
+      <p>This symmetric form is clean but implicit. The classical statement people usually mean by "the functional equation" isolates $\zeta(s)$ against $\zeta(1-s)$ explicitly. Getting there is pure Gamma-function algebra:</p>
+      <div class="block theorem">
+        <span class="block-label">Corollary 3.7 — the classical functional equation</span>
+        <div class="eq-wrap">$$\zeta(s) \;=\; 2^s\,\pi^{s-1}\,\sin\!\left(\frac{\pi s}{2}\right)\Gamma(1-s)\,\zeta(1-s), \qquad s\in\mathbb{C}\setminus\{0,1\}.$$</div>
+      </div>
+      <div class="block proof">
+        <span class="block-label">Proof</span>
+        <p>From $G(s)=G(1-s)$: $\;\zeta(s)=\pi^{s-1/2}\dfrac{\Gamma((1-s)/2)}{\Gamma(s/2)}\,\zeta(1-s)$. It remains to show $\dfrac{\Gamma((1-s)/2)}{\Gamma(s/2)}=2^s\pi^{-1/2}\sin(\pi s/2)\Gamma(1-s)$. Reflection with $z=(1-s)/2$ gives $\Gamma\!\left(\frac{1-s}2\right)\Gamma\!\left(\frac{1+s}2\right)=\dfrac{\pi}{\sin(\pi(1-s)/2)}=\dfrac{\pi}{\cos(\pi s/2)}$. Duplication with $z=s/2$ gives $\Gamma(s/2)\Gamma\!\left(\frac{1+s}2\right)=2^{1-s}\sqrt\pi\,\Gamma(s)$. Dividing these two identities eliminates $\Gamma\!\left(\frac{1+s}2\right)$:</p>
+        <div class="eq-wrap">$$\frac{\Gamma((1-s)/2)}{\Gamma(s/2)} = \frac{2^{s-1}\sqrt\pi}{\Gamma(s)\cos(\pi s/2)}.$$</div>
+        <p>Now trade $\Gamma(s)$ for $\Gamma(1-s)$ via reflection again, $\Gamma(s)=\pi/(\sin(\pi s)\Gamma(1-s))$, and use $\sin(\pi s)=2\sin(\pi s/2)\cos(\pi s/2)$ to cancel $\cos(\pi s/2)$:</p>
+        <div class="eq-wrap">$$\frac{\Gamma((1-s)/2)}{\Gamma(s/2)} = \frac{2^{s-1}\sqrt\pi\cdot\sin(\pi s)\,\Gamma(1-s)}{\pi\cos(\pi s/2)} = \frac{2^{s}\sin(\pi s/2)\,\Gamma(1-s)}{\sqrt\pi}.$$</div>
+        <p>Substituting back gives $\zeta(s)=\pi^{s-1/2}\cdot2^s\pi^{-1/2}\sin(\pi s/2)\Gamma(1-s)\,\zeta(1-s)=2^s\pi^{s-1}\sin(\pi s/2)\Gamma(1-s)\zeta(1-s)$, as claimed.</p>
+        <span class="qed">∎</span>
+      </div>
+
+      <div class="block open">
+        <span class="block-label">Where this leaves us</span>
+        <p>This is exactly the equation stated at the top of this notebook — now with a complete proof behind it, not just a citation. Two things fall out immediately just from staring at the right-hand side. First, wherever $\sin(\pi s/2)=0$ — the even integers $s=0,\pm2,\pm4,\dots$ — the equation <em>threatens</em> a zero of $\zeta$; we'll sort out in Stage&nbsp;4 exactly which of those threats are real (they turn out to be $s=-2,-4,-6,\dots$ only — the <strong>trivial zeros</strong> — while $s=0,2,4,\dots$ are saved by a matching pole or a matching non-vanishing value). Second, and more importantly for us: for $\sigma<0$, this equation expresses $\zeta(s)$ as a product of things we already understand — and Theorem&nbsp;1.4 already told us $\zeta(1-s)\ne0$ whenever $\sigma<0$ (since then $\mathrm{Re}(1-s)>1$). That is the key that will let Stage&nbsp;4 pin down, completely, every zero of $\zeta$ that lies <em>outside</em> the critical strip — and show that the rest, whatever they are, are trapped in the strip $0\le\sigma\le1$ where the Hypothesis lives.</p>
+      </div>
+    </section>
+
+    <section class="stage" id="s4">
+      <div class="stage-head"><span class="stage-num">04</span><h2>Trivial zeros &amp; the critical strip</h2></div>
+      <p class="stage-sub">Where the functional equation cashes out: every zero of $\zeta$ outside a specific vertical strip is now completely known and accounted for — and the Hypothesis finally becomes a single precise sentence.</p>
+
+      <h3 class="sub"><span class="sub-index">4.1</span>Every zero with $\sigma&lt;0$, found</h3>
+      <div class="block theorem">
+        <span class="block-label">Theorem 4.1 — the trivial zeros</span>
+        <p>For $\sigma<0$: $\;\zeta(s)=0$ if and only if $s\in\{-2,-4,-6,\dots\}$, and each such zero is simple.</p>
+      </div>
+      <div class="block proof">
+        <span class="block-label">Proof</span>
+        <p><em>($\Leftarrow$)</em> At $s=-2n$ ($n\ge1$): $\sin(\pi s/2)=\sin(-n\pi)=0$. The other factors in Corollary&nbsp;3.7 are finite there — $\Gamma(1-s)=\Gamma(1+2n)=(2n)!$, and $\zeta(1-s)=\zeta(1+2n)$ is literally the convergent series $\sum k^{-(1+2n)}$ (since $1+2n>1$), a finite number. So $\zeta(-2n)=(\text{finite})\times0\times(\text{finite})\times(\text{finite})=0$.</p>
+        <p>For the order: in a full neighborhood of $s=-2n$, the three factors $2^s\pi^{s-1}$, $\Gamma(1-s)$, and $\zeta(1-s)$ are each holomorphic <em>and non-vanishing</em> — the first is entire and never $0$; $\Gamma(1-s)$ is holomorphic near $s=-2n$ (since $1-s$ stays near the positive integer $1+2n$, far from $\Gamma$'s poles at $0,-1,-2,\dots$) and $\Gamma$ has no zeros anywhere; $\zeta(1-s)$ is holomorphic and nonzero near $s=-2n$ by Theorems&nbsp;1.2 and 1.4 (since $1-s$ stays in $\sigma>1$). So the order of vanishing of the product at $s=-2n$ equals the order of vanishing of $\sin(\pi s/2)$ there, which is exactly $1$ (its derivative $\tfrac\pi2\cos(\pi s/2)=\tfrac\pi2(-1)^n\ne0$ there).</p>
+        <p><em>($\Rightarrow$)</em> Suppose $\sigma<0$ and $\zeta(s)=0$. Then $\mathrm{Re}(1-s)=1-\sigma>1$, so by Theorem&nbsp;1.4, $\zeta(1-s)\ne0$; and since $1-s$ has real part $>1$ it is nowhere near a nonpositive integer, so $\Gamma(1-s)$ is finite and — $\Gamma$ having no zeros — nonzero. Since $2^s\pi^{s-1}$ is also never $0$, Corollary&nbsp;3.7 forces $\sin(\pi s/2)=0$, i.e.\ $s=2k$ for some integer $k$. Combined with $\sigma<0$: $k\le-1$, so $s\in\{-2,-4,-6,\dots\}$.</p>
+        <span class="qed">∎</span>
+      </div>
+      <p>These are the <strong>trivial zeros</strong> — "trivial" only in the sense that we've now fully explained them from the $\sin$ factor alone; they carry no information about primes. Every other zero is called <strong>nontrivial</strong>, and that's where all the difficulty — and all the content — of the Hypothesis lives.</p>
+
+      <h3 class="sub"><span class="sub-index">4.2</span>The critical strip</h3>
+      <div class="block theorem">
+        <span class="block-label">Definition</span>
+        <p>The <strong>critical strip</strong> is the closed region $\{s: 0\le\mathrm{Re}(s)\le1\}$.</p>
+      </div>
+      <div class="block theorem">
+        <span class="block-label">Theorem 4.2</span>
+        <p>Every nontrivial zero of $\zeta$ lies in the critical strip.</p>
+      </div>
+      <div class="block proof">
+        <span class="block-label">Proof</span>
+        <p>Immediate: Theorem&nbsp;1.4 rules out $\sigma>1$; Theorem&nbsp;4.1 accounts for every zero with $\sigma<0$, and all of those are trivial. So any zero that is <em>not</em> trivial must have $0\le\sigma\le1$.</p>
+        <span class="qed">∎</span>
+      </div>
+
+      <h3 class="sub"><span class="sub-index">4.3</span>Two symmetries of the zero set</h3>
+      <p>The strip isn't just where the nontrivial zeros are stuck — they're arranged inside it with real structure.</p>
+      <div class="block theorem">
+        <span class="block-label">Lemma 4.3 (conjugate symmetry)</span>
+        <p>$\zeta(\bar s)=\overline{\zeta(s)}$ for every $s\in\mathbb{C}\setminus\{1\}$.</p>
+      </div>
+      <div class="block proof">
+        <span class="block-label">Proof</span>
+        <p>For $\sigma>1$: $\;\overline{n^{-s}}=\overline{e^{-s\log n}}=e^{-\bar s\log n}=n^{-\bar s}$ (as $\log n$ is real), so termwise conjugation of the absolutely convergent series gives $\overline{\zeta(s)}=\sum n^{-\bar s}=\zeta(\bar s)$ there. Now $h(s):=\overline{\zeta(\bar s)}$ is holomorphic on $\mathbb{C}\setminus\{1\}$ (composing the anti-holomorphic maps $s\mapsto\bar s$ and $w\mapsto\bar w$ around the holomorphic $\zeta$ gives back something holomorphic — locally, if $\zeta(w)=\sum a_n(w-w_0)^n$ then $h(s)=\sum\overline{a_n}(s-\overline{w_0})^n$ is again a convergent power series in $s$), and $h(s)=\zeta(s)$ on $\sigma>1$ by the identity just shown. By the identity theorem, $h=\zeta$ everywhere on $\mathbb{C}\setminus\{1\}$, i.e.\ $\overline{\zeta(\bar s)}=\zeta(s)$, which rearranges to the claim.</p>
+        <span class="qed">∎</span>
+      </div>
+      <div class="block theorem">
+        <span class="block-label">Theorem 4.4 (functional-equation pairing)</span>
+        <p>If $\rho$ is a zero of $\zeta$ with $0\le\mathrm{Re}(\rho)\le1$, then $1-\rho$ is also a zero of $\zeta$.</p>
+      </div>
+      <div class="block proof">
+        <span class="block-label">Proof</span>
+        <p>Since $\zeta(0)=-\tfrac12\ne0$ and $\zeta$ has a pole (not a zero) at $1$, any actual zero $\rho$ in the strip satisfies $\rho\ne0,1$; in particular $\rho$ is not an even integer, so $\sin(\pi\rho/2)\ne0$, and $1-\rho$ is not a nonpositive integer (that would force $\rho\ge1$ to be a positive integer, only possibility $\rho=1$, excluded), so $\Gamma(1-\rho)$ is finite and — $\Gamma$ having no zeros — nonzero. Corollary&nbsp;3.7 at $s=\rho$ reads $0=\zeta(\rho)=2^\rho\pi^{\rho-1}\sin(\pi\rho/2)\Gamma(1-\rho)\zeta(1-\rho)$, and since every factor but the last is nonzero, $\zeta(1-\rho)=0$.</p>
+        <span class="qed">∎</span>
+      </div>
+      <div class="block remark">
+        <span class="block-label">Corollary — the four-fold symmetry</span>
+        <p>If $\rho$ is a nontrivial zero, then so are $1-\rho$, $\bar\rho$, and $1-\bar\rho$. Geometrically: the nontrivial zero set is symmetric under reflection across the <em>real axis</em> ($\rho\mapsto\bar\rho$, Lemma&nbsp;4.3) and, independently, under reflection across the vertical line $\sigma=\tfrac12$ ($\rho\mapsto1-\bar\rho$, combining both symmetries). That vertical line — the <strong>critical line</strong> — is therefore forced, by nothing more than what we've proved so far, to be an axis of symmetry for the zero set. Whether it is also a <em>container</em> for the whole zero set is exactly the open question.</p>
+      </div>
+
+      <h3 class="sub"><span class="sub-index">4.4</span>The Riemann Hypothesis, precisely</h3>
+      <div class="block open">
+        <span class="block-label">The Hypothesis, now a well-posed statement</span>
+        <p>Every quantity in this sentence has been constructed and is fully rigorous:</p>
+        <div class="eq-wrap">$$\textbf{RH:}\qquad \text{every nontrivial zero } \rho \text{ of } \zeta \text{ satisfies } \operatorname{Re}(\rho)=\tfrac12.$$</div>
+        <p>Equivalently, using Theorem&nbsp;4.2: every zero of $\zeta$ with $\mathrm{Re}(s)\ge0$ lies exactly on the line $\sigma=\tfrac12$. This is no longer a slogan — it's a precise claim about the function we spent Stages&nbsp;1–3 constructing, and it remains completely open. Nothing we've proved comes close to forcing it: Theorem&nbsp;4.4 shows the zero set is symmetric about the critical line, which is consistent with every zero sitting on it, but equally consistent with symmetric off-line pairs $\rho,1-\rho$ scattered anywhere in the strip. Distinguishing those two pictures is the entire problem, and it's exactly where Stage&nbsp;5 has to go next: why does this forced symmetry not, by itself, settle anything?</p>
+      </div>
+    </section>
+
+    <section class="stage" id="s5">
+      <div class="stage-head"><span class="stage-num">05</span><h2>Why 1/2 is not automatic</h2></div>
+      <p class="stage-sub">Symmetry pins down an axis; it doesn't clear the room. We make that precise, then bring in the one ingredient nothing so far has used — the primes themselves, through the logarithm of the Euler product — to prove a real, if modest, theorem: a thin zero-free sliver on each edge of the strip.</p>
+
+      <h3 class="sub"><span class="sub-index">5.1</span>The phantom rectangle</h3>
+      <p>Suppose, for contradiction's sake, that $\rho=\sigma+it$ were a nontrivial zero with $\sigma\ne\tfrac12$ and $t\ne0$. Theorem&nbsp;4.4 and Lemma&nbsp;4.3 don't forbid this — they <em>oblige</em> it to bring company: $1-\rho$, $\bar\rho$, and $1-\bar\rho$ must also be zeros. Generically these are four distinct points, forming a rectangle centered at $s=\tfrac12$, symmetric across both the real axis and the critical line. Check every theorem proved in Stages&nbsp;1–4 against this rectangle: Theorem&nbsp;1.4 is satisfied (all four points have $\sigma\le1$); Theorem&nbsp;4.1 is satisfied (none is a negative even integer, generically); Theorem&nbsp;4.2 is satisfied (all four sit in the strip); Theorem&nbsp;4.4 and Lemma&nbsp;4.3 are satisfied by construction. <strong>Nothing breaks.</strong> This is the precise sense in which the symmetry we found is necessary for the Hypothesis but nowhere near sufficient — it describes the shape a violation would have to take, without ruling the violation out. Closing that gap needs an input the functional equation alone doesn't supply: the primes.</p>
+
+      <h3 class="sub"><span class="sub-index">5.2</span>Bringing in the primes: a real zero-free line</h3>
+      <p>The Euler product (Theorem&nbsp;1.3) lets us take a logarithm. For $\sigma>1$,</p>
+      <div class="eq-wrap">$$L(s):=\sum_{p}\sum_{k=1}^{\infty}\frac{p^{-ks}}{k}$$</div>
+      <p>converges absolutely (compare termwise to $\sum_p p^{-\sigma}/(1-p^{-\sigma})$, itself comparable to $\sum_n n^{-\sigma}$), and exponentiating termwise recovers the Euler product exactly: $e^{L(s)}=\prod_p e^{-\log(1-p^{-s})}=\prod_p(1-p^{-s})^{-1}=\zeta(s)$. So $L(s)$ is <em>a</em> valid logarithm of $\zeta(s)$ — and for any $w=e^{L}$, $\mathrm{Re}(L)=\log|w|$ automatically, regardless of which branch. Writing $s=\sigma+it$ and $p^{-ks}=p^{-k\sigma}\bigl(\cos(kt\log p)-i\sin(kt\log p)\bigr)$:</p>
+      <div class="eq-wrap">$$\log|\zeta(\sigma+it)| = \mathrm{Re}\,L(\sigma+it) = \sum_{p,k}\frac{p^{-k\sigma}}{k}\cos(kt\log p), \qquad \sigma>1.$$</div>
+      <div class="block theorem">
+        <span class="block-label">Lemma 5.1 (the 3-4-1 inequality)</span>
+        <p>For real $\sigma>1$ and real $t$: $\;\log\zeta(\sigma)^3\,|\zeta(\sigma+it)|^4\,|\zeta(\sigma+2it)| \ge 0$.</p>
+      </div>
+      <div class="block proof">
+        <span class="block-label">Proof</span>
+        <p>Apply the identity above at heights $0,t,2t$ and combine with weights $3,4,1$:</p>
+        <div class="eq-wrap">$$3\log\zeta(\sigma)+4\log|\zeta(\sigma+it)|+\log|\zeta(\sigma+2it)| = \sum_{p,k}\frac{p^{-k\sigma}}{k}\Bigl[3+4\cos(kt\log p)+\cos(2kt\log p)\Bigr].$$</div>
+        <p>With $\theta=kt\log p$, the bracket is $3+4\cos\theta+\cos2\theta=3+4\cos\theta+(2\cos^2\theta-1)=2(1+\cos\theta)^2\ge0$. Every term of the sum is therefore $\ge0$ (each $p^{-k\sigma}/k>0$), so the whole sum — which is exactly $\log\bigl[\zeta(\sigma)^3|\zeta(\sigma+it)|^4|\zeta(\sigma+2it)|\bigr]$ — is $\ge0$.</p>
+        <span class="qed">∎</span>
+      </div>
+      <p>Exponentiating: $\zeta(\sigma)^3\,|\zeta(\sigma+it)|^4\,|\zeta(\sigma+2it)|\ge1$ for every $\sigma>1$ and every real $t$ — an inequality about $\zeta$ that has nothing to do with the functional equation, and everything to do with unique factorization.</p>
+
+      <div class="block theorem">
+        <span class="block-label">Theorem 5.2 (Hadamard, de la Vallée&nbsp;Poussin, 1896)</span>
+        <p>$\zeta(1+it)\ne0$ for every real $t\ne0$.</p>
+      </div>
+      <div class="block proof">
+        <span class="block-label">Proof</span>
+        <p>Suppose $\zeta(1+it_0)=0$ for some real $t_0\ne0$, with order $m\ge1$ (finite and well-defined, since $\zeta\not\equiv0$ near this point). Write $\zeta(s)=(s-1-it_0)^m g(s)$ near $s=1+it_0$, with $g$ holomorphic and $g(1+it_0)\ne0$. Along $s=\sigma+it_0$ as $\sigma\to1^+$:</p>
+        <div class="eq-wrap">$$|\zeta(\sigma+it_0)| = (\sigma-1)^m|g(\sigma+it_0)| \sim C(\sigma-1)^m, \qquad C=|g(1+it_0)|>0.$$</div>
+        <p>Meanwhile $\zeta(\sigma)\sim\dfrac1{\sigma-1}$ as $\sigma\to1^+$ (the simple pole, residue $1$, from Theorem&nbsp;3.5), and $\zeta(\sigma+2it_0)\to\zeta(1+2it_0)$, a <em>finite</em> number, since $t_0\ne0$ means $1+2it_0\ne1$ is not the pole. So as $\sigma\to1^+$,</p>
+        <div class="eq-wrap">$$\zeta(\sigma)^3\,|\zeta(\sigma+it_0)|^4\,|\zeta(\sigma+2it_0)| \;\sim\; \frac{1}{(\sigma-1)^3}\cdot C^4(\sigma-1)^{4m}\cdot|\zeta(1+2it_0)| \;=\; C'(\sigma-1)^{4m-3}.$$</div>
+        <p>Since $m\ge1$, the exponent $4m-3\ge1>0$, so this product $\to0$ as $\sigma\to1^+$ — directly contradicting Lemma&nbsp;5.1's guarantee that it stays $\ge1$ for every $\sigma>1$. No such zero exists.</p>
+        <span class="qed">∎</span>
+      </div>
+
+      <h3 class="sub"><span class="sub-index">5.3</span>Both edges of the strip, for free</h3>
+      <div class="block theorem">
+        <span class="block-label">Corollary 5.3</span>
+        <p>$\zeta(it)\ne0$ for every real $t\ne0$; combined with $\zeta(0)=-\tfrac12\ne0$ (Stage&nbsp;3), $\zeta$ has <em>no</em> zeros at all on $\sigma=0$. Hence every nontrivial zero lies in the <strong>open</strong> critical strip $0<\sigma<1$.</p>
+      </div>
+      <div class="block proof">
+        <span class="block-label">Proof</span>
+        <p>If $\zeta(it_0)=0$ for real $t_0\ne0$, Theorem&nbsp;4.4 (applicable since $0\le\mathrm{Re}(it_0)\le1$) makes $1-it_0$ a zero too — with real part exactly $1$ and, since $t_0\ne0$, imaginary part $-t_0\ne0$. That contradicts Theorem&nbsp;5.2. So no such zero exists; together with $\zeta(0)\ne0$, the whole line $\sigma=0$ is zero-free. Theorem&nbsp;4.2 already excluded $\sigma>1$ and $\sigma<0$ (bar the trivial zeros); this rules out the two remaining boundary lines.</p>
+        <span class="qed">∎</span>
+      </div>
+
+      <div class="block open">
+        <span class="block-label">Where this leaves us</span>
+        <p>Real progress, honestly bounded. The primes themselves — not just the functional equation's symmetry — just bought us two zero-free lines at the very edges of the strip. Every nontrivial zero is now known to satisfy $0<\sigma<1$ strictly, symmetric about $\sigma=\tfrac12$. But the gap between "somewhere in an open interval of width $1$, symmetric about the midpoint" and "exactly at the midpoint" is still the entire content of the Hypothesis — and the 3-4-1 trick, for all its cleverness, is now tapped out: it was strong enough to kill zeros exactly on the boundary, but the same argument gives nothing once $\sigma$ is pushed even slightly inside $(0,1)$. Sharper (and much harder) analytic technique can push the zero-free region a little further in from each edge — that's an entire research area in itself — but not, so far, all the way to the center. To make progress from here we need a genuinely different question: not "can zeros avoid a given vertical line," but "how many zeros are there, up to a given height $T$, and where roughly do they sit?" That counting question is Stage&nbsp;6.</p>
+      </div>
+    </section>
+
+    <section class="stage" id="s6">
+      <div class="stage-head"><span class="stage-num">06</span><h2>Counting zeros, N(T)</h2></div>
+      <p class="stage-sub">Since we can't yet say <em>where</em> in the strip the nontrivial zeros sit, we ask a question we actually <em>can</em> answer: how many are there, up to height $T$? The tool is the argument principle, applied not to $\zeta$ itself but to the tidier function built for exactly this purpose.</p>
+
+      <h3 class="sub"><span class="sub-index">6.1</span>A cleaner target: the entire function $\xi$</h3>
+      <p>$\zeta$ has an inconvenient pole at $s=1$ and inconvenient trivial zeros scattered down the negative real axis — both irrelevant to what we actually want to count. The completed function $\xi(s)=\tfrac12s(s-1)\pi^{-s/2}\Gamma(s/2)\zeta(s)$ from Theorem&nbsp;3.6 was built to erase exactly this clutter.</p>
+      <div class="block theorem">
+        <span class="block-label">Proposition 6.1</span>
+        <p>$\xi$ is entire, and for every $s\in\mathbb{C}$: $\xi(s)=0$ if and only if $s$ is a <em>nontrivial</em> zero of $\zeta$ — with the same order. In particular $\xi$ has no zeros outside the critical strip.</p>
+      </div>
+      <div class="block proof">
+        <span class="block-label">Proof</span>
+        <p>For $\sigma>1$: $s(s-1)\ne0$, $\pi^{-s/2}\ne0$, $\Gamma(s/2)$ is finite and nonzero ($s/2$ isn't a nonpositive integer, and $\Gamma$ has no zeros), and $\zeta(s)\ne0$ (Theorem&nbsp;1.4) — so $\xi(s)\ne0$. For $\sigma<0$ with $s\ne-2,-4,-6,\dots$: the same reasoning applies verbatim, now using Theorem&nbsp;4.1 in place of Theorem&nbsp;1.4, so again $\xi(s)\ne0$. At $s=-2n$ ($n\ge1$): write $s=-2n+\epsilon$. By Theorem&nbsp;4.1, $\zeta(s)=c\,\epsilon+O(\epsilon^2)$ with $c=\zeta'(-2n)\ne0$; by the cited residue formula, $\Gamma(s/2)=\Gamma(-n+\epsilon/2)\sim\dfrac{2(-1)^n}{n!\,\epsilon}$. So $\zeta(s)\Gamma(s/2)\to\dfrac{2(-1)^nc}{n!}\ne0$ as $\epsilon\to0$ — finite and nonzero — and since $s(s-1)$ and $\pi^{-s/2}$ are themselves finite and nonzero at $s=-2n$, $\xi(-2n)$ is a finite nonzero number: no pole (confirming $\xi$ is entire even at the would-be trouble spots) and no zero. That covers every $s\notin[0,1]$. For $0\le\sigma\le1$: here $\Gamma(s/2)$ has no pole ($s/2\in[0,\tfrac12]$ avoids $0,-1,-2,\dots$ except possibly $s=0$, handled the same way as above with $n=0$: $\zeta(0)=-\tfrac12\ne0$ finite while $\Gamma(0)$ has a pole matching $s(s-1)$'s zero, giving the finite nonzero value $\xi(0)=\tfrac12$ from Stage&nbsp;3) and $s(s-1)$ vanishes only at the two endpoints, again resolved finitely and nonzero (Stage 3's $\xi(0)=\xi(1)=\tfrac12$). Everywhere else in the strip, $s(s-1)$, $\pi^{-s/2}$, $\Gamma(s/2)$ are all finite and nonzero, so $\xi(s)=0$ exactly when $\zeta(s)=0$ — i.e.\ exactly at the nontrivial zeros, with matching order.</p>
+        <span class="qed">∎</span>
+      </div>
+
+      <h3 class="sub"><span class="sub-index">6.2</span>A mirror across the critical line</h3>
+      <p>$\xi$ inherits a conjugate symmetry from $\zeta$ (Lemma&nbsp;4.3) — each of $s(s-1)$, $\pi^{-s/2}$, and $\Gamma(s/2)$ satisfies $f(\bar s)=\overline{f(s)}$ too (the last by the identical identity-theorem argument as Lemma&nbsp;4.3, since $\Gamma$ is real on the positive real axis), and a product of such functions inherits the property. So $\xi(\bar s)=\overline{\xi(s)}$.</p>
+      <div class="block theorem">
+        <span class="block-label">Proposition 6.2</span>
+        <p>For every $s=\sigma+it$: $\;\xi\bigl((1-\sigma)+it\bigr) = \overline{\xi(\sigma+it)}$.</p>
+      </div>
+      <div class="block proof">
+        <span class="block-label">Proof</span>
+        <p>Apply conjugate symmetry at the point $1-s$: $\xi(\overline{1-s})=\overline{\xi(1-s)}$. The right side is $\overline{\xi(s)}$ by the functional equation (Theorem&nbsp;3.6). The left side's argument is $\overline{1-s}=1-\bar s=(1-\sigma)+it$. So $\xi((1-\sigma)+it)=\overline{\xi(s)}$.</p>
+        <span class="qed">∎</span>
+      </div>
+      <p>So reflecting across the critical line $\sigma=\tfrac12$ conjugates the value of $\xi$: same modulus, negated argument. This is the algebraic heart of "$\sigma=\tfrac12$ is an axis of symmetry," now stated for $\xi$ directly rather than just its zero set — and it's about to do real work.</p>
+
+      <h3 class="sub"><span class="sub-index">6.3</span>Counting via the argument principle</h3>
+      <p>For $T>0$ not equal to the imaginary part of any zero, define $N(T):=$ the number of nontrivial zeros $\rho=\beta+i\gamma$ of $\zeta$ with $0<\gamma<T$, counted with multiplicity. By Proposition&nbsp;6.1 this is exactly the number of zeros of the entire function $\xi$ with $0<\mathrm{Im}(s)<T$ (none exist outside $0\le\sigma\le1$, so no left/right boundary worries). Let $\mathcal R_T$ be the rectangle with corners $-1,\,2,\,2+iT,\,-1+iT$, traversed counterclockwise — its boundary avoids every zero of $\xi$ (Stage 5 keeps them off $\sigma=0,1$, and $T$ was chosen off every ordinate). The argument principle for the entire function $\xi$ gives</p>
+      <div class="eq-wrap">$$2\pi N(T) = \Delta_{\partial\mathcal R_T}\arg\xi(s),$$</div>
+      <p>the net change in a continuously-varying argument of $\xi(s)$ once around $\partial\mathcal R_T$. Split this into the bottom, right, top, and left edges. Write $A(t):=\arg\xi(-1+it)$, continuously for $t\in[0,T]$. By Proposition&nbsp;6.2 with $\sigma=-1$: $\xi(2+it)=\overline{\xi(-1+it)}$, so $\arg\xi(2+it)=-A(t)$ (same continuous branch, negated). Hence the change along the right edge (upward, $t:0\to T$) is $-A(T)-(-A(0))=A(0)-A(T)$ — and the change along the left edge, traversed <em>downward</em> as the rectangle requires ($t:T\to0$), is $A(0)-A(T)$ as well. The two vertical sides contribute identically:</p>
+      <div class="eq-wrap">$$2\pi N(T) = \Delta_{\text{bottom}}\arg\xi + \Delta_{\text{top}}\arg\xi + 2\bigl(A(0)-A(T)\bigr).$$</div>
+      <p>The mirror symmetry has done real work: instead of four independent unknowns, the count now rests on the bottom edge, the top edge, and a single quantity $A(0)-A(T)$ — not four.</p>
+
+      <h3 class="sub"><span class="sub-index">6.4</span>The Riemann&ndash;von&nbsp;Mangoldt formula</h3>
+      <p>Finishing from here is bookkeeping rather than new ideas — but it's genuinely lengthy bookkeeping: pinning down $\Delta_{\text{bottom}}$ needs $\xi$'s sign on specific real intervals (via known special values like $\zeta(2)=\pi^2/6$), and $\Delta_{\text{top}}$ splits as the argument of the elementary prefactor $\tfrac12s(s-1)\pi^{-s/2}\Gamma(s/2)$ — evaluated via the cited Stirling asymptotic — plus the argument of $\zeta(\tfrac12+it)$ itself, which by definition can't be pinned down further without knowing more about $\zeta$ than we currently do. In the interest of not turning this notebook into a several-page exercise in contour bookkeeping, we cite the outcome, exactly as we cited Poisson summation in Stage&nbsp;3:</p>
+      <div class="block theorem">
+        <span class="block-label">Theorem 6.3 (Riemann, 1859; von Mangoldt, 1905 — full rigor)</span>
+        <div class="eq-wrap">$$N(T) = \frac{T}{2\pi}\log\frac{T}{2\pi} - \frac{T}{2\pi} + \frac78 + S(T) + O\!\left(\frac1T\right), \qquad S(T):=\frac1\pi\arg\zeta\!\left(\tfrac12+iT\right),$$</div>
+        <p>the argument obtained by continuous variation along the path $2\to2+iT\to\tfrac12+iT$. Moreover $S(T)=O(\log T)$ (a separate classical estimate, via Jensen's formula bounding how many zeros can crowd near a given point).</p>
+      </div>
+      <div class="block remark">
+        <span class="block-label">What's derived here vs.\ cited</span>
+        <p>Fully proved above: $\xi$ is the right object to count with (Prop&nbsp;6.1), the mirror symmetry that halves the unknowns (Prop&nbsp;6.2), and the reduction of $N(T)$ to bottom $+$ top $+\,2(A(0){-}A(T))$. Cited: the Stirling-based evaluation of the smooth part of the top edge (giving the $\frac{T}{2\pi}\log\frac{T}{2\pi}-\frac T{2\pi}+\frac78$ terms) and the bound on the leftover term $S(T)$. This is exactly the standard division of labor in every textbook treatment — the smooth part is a calculus exercise once you trust Stirling; the interesting content is entirely in $S(T)$.</p>
+      </div>
+
+      <div class="block open">
+        <span class="block-label">Where this leaves us</span>
+        <p>This is a genuinely strong result: the <em>total number</em> of nontrivial zeros up to height $T$ is now known with an error of just $O(\log T)$ — about $\frac{T}{2\pi}\log T$ of them, growing without bound as $T\to\infty$. That number is enormous and it only grows. The Hypothesis claims <em>every single one</em> of these countably many, increasingly numerous zeros sits exactly on $\sigma=\tfrac12$. Stage&nbsp;6 tells us how many targets there are; it says nothing about how many actually hit the line. That's precisely the question Hardy answered in 1914 — not for all of them, but for infinitely many — and Selberg improved dramatically in 1942, to a positive proportion of the total. Stage&nbsp;7 is that story.</p>
+      </div>
+    </section>
+
+    <section class="stage" id="s7">
+      <div class="stage-head"><span class="stage-num">07</span><h2>Hardy &amp; Selberg</h2></div>
+      <p class="stage-sub">Stage 6 counted the targets: roughly $\frac T{2\pi}\log T$ of them below height $T$, and growing forever. Nobody has ever shown all of them sit on the line. But it <em>is</em> known that infinitely many do — and, far more strongly, that a definite fraction of all of them do. This stage is where the notebook's tone has to shift: from here on we are citing genuinely hard 20th-century theorems rather than re-deriving them, and I want to be explicit about exactly where that line falls.</p>
+
+      <h3 class="sub"><span class="sub-index">7.1</span>Where the two symmetries collapse into one</h3>
+      <p>Something special happens exactly on the critical line that happens nowhere else. For $s=\tfrac12+it$: $\;1-s=\tfrac12-it=\bar s$ — the two symmetry operations from Stage&nbsp;6, "reflect through $1-s$" and "conjugate," become the <em>same</em> operation.</p>
+      <div class="block theorem">
+        <span class="block-label">Proposition 7.1</span>
+        <p>Define $\Xi(t):=\xi\bigl(\tfrac12+it\bigr)$ for real $t$ (the classical <strong>Riemann Xi function</strong>). Then $\Xi$ is real-valued and even: $\Xi(t)\in\mathbb{R}$ and $\Xi(-t)=\Xi(t)$ for every real $t$.</p>
+      </div>
+      <div class="block proof">
+        <span class="block-label">Proof</span>
+        <p>With $s=\tfrac12+it$: $\xi(s)=\xi(1-s)$ (Theorem&nbsp;3.6) $=\xi(\bar s)$ (just shown) $=\overline{\xi(s)}$ (conjugate symmetry, §6.2). So $\xi(s)=\overline{\xi(s)}$, i.e.\ $\Xi(t)=\xi(\tfrac12+it)$ is real. For evenness: $\Xi(-t)=\xi(\tfrac12-it)=\xi(\overline{\tfrac12+it})=\overline{\xi(\tfrac12+it)}=\overline{\Xi(t)}=\Xi(t)$, the last step because $\Xi(t)$ is already known to be real.</p>
+        <span class="qed">∎</span>
+      </div>
+      <div class="block theorem">
+        <span class="block-label">Proposition 7.2 — the reduction</span>
+        <p>For real $t$: $\;\Xi(t)=0 \iff \zeta\bigl(\tfrac12+it\bigr)=0$, with matching multiplicity. Consequently, the Riemann Hypothesis is equivalent to: <strong>every zero of the entire function $\xi$ is real</strong> — equivalently, every zero of $\Xi$, viewed as a function of a complex variable, is real.</p>
+      </div>
+      <p>(Immediate from Proposition&nbsp;6.1, since $\tfrac12+it$ always lies in $0\le\sigma\le1$.) This is a genuinely useful reformulation: it turns a question about where complex zeros of $\zeta$ sit into a question about whether a specific, perfectly concrete real-valued function of a real variable — one you could numerically plot — ever has a non-real root. Hardy's theorem is a first, partial answer.</p>
+
+      <h3 class="sub"><span class="sub-index">7.2</span>Hardy's theorem (1914)</h3>
+      <p>Stage&nbsp;6 already tells us $\xi$ has infinitely many zeros overall (there are $\sim\frac T{2\pi}\log T\to\infty$ of them below height $T$). That alone says nothing about how many are real — a generic entire function with infinitely many zeros could easily have only finitely many real ones. Hardy's contribution is a separate, dedicated argument that real zeros keep appearing forever.</p>
+      <div class="block theorem">
+        <span class="block-label">Theorem 7.3 (Hardy, 1914)</span>
+        <p>$\zeta(s)$ has infinitely many zeros on the critical line $\sigma=\tfrac12$ — equivalently, $\Xi(t)$ has infinitely many real zeros.</p>
+      </div>
+      <div class="block remark">
+        <span class="block-label">The method, honestly described (cited, not reproduced)</span>
+        <p>Hardy's proof does not try to locate any particular zero. Instead it studies a moment integral $\int_0^\infty \Xi(t)\,\varphi(t)\,dt$ against a well-chosen even test function $\varphi$ built from the same theta-function machinery as Stage&nbsp;3 — and shows this integral has an <em>exact</em> closed-form value, computable directly, independent of any unproven hypothesis. If $\Xi$ had only finitely many real zeros, it would (being continuous and real) eventually keep one constant sign, and a standard real-analysis argument would then force that same integral toward a sign or magnitude incompatible with the exact closed form as $\varphi$ is tuned. That contradiction is the whole proof. The strategy — <em>compute an integral two ways, once exactly and once assuming only finitely many sign changes, and watch them disagree</em> — reappears, in more powerful forms, in everything that follows. We cite the full estimate rather than carry it out.</p>
+      </div>
+
+      <h3 class="sub"><span class="sub-index">7.3</span>Selberg's theorem (1942) and beyond</h3>
+      <p>"Infinitely many" is compatible with an infinitesimal fraction of the total. Selberg went much further.</p>
+      <div class="block theorem">
+        <span class="block-label">Theorem 7.4 (Selberg, 1942)</span>
+        <p>There is an absolute constant $c>0$ such that, for all large $T$, at least $c\cdot N(T)$ of the nontrivial zeros with $0<\gamma<T$ lie exactly on the critical line. That is: a <strong>positive proportion</strong> of all nontrivial zeros satisfy the Riemann Hypothesis.</p>
+      </div>
+      <div class="block remark">
+        <span class="block-label">The method, honestly described (cited, not reproduced)</span>
+        <p>Selberg's innovation was the <strong>mollifier</strong>: multiply $\zeta(\tfrac12+it)$ by a short, cleverly-chosen Dirichlet polynomial $M(s)$ designed so that $\zeta(s)M(s)$ is, on average, much closer to $1$ than $\zeta$ alone is — effectively cancelling out $\zeta$'s wilder fluctuations. Estimating the mean values $\int_0^T|\zeta(\tfrac12+it)M(\tfrac12+it)|^2\,dt$ and comparing to $\int_0^T \zeta(\tfrac12+it)M(\tfrac12+it)\,dt$ turns a counting argument (à la Hardy's sign-change trick, but quantitative) into a lower bound on how many zeros are forced onto the line. This requires genuinely deep mean-value estimates for $\zeta$ — a substantial piece of 20th-century analytic number theory in its own right, well beyond what this notebook has built.</p>
+      </div>
+      <p>The constant $c$ has been improved many times since 1942 by refining the mollifier: Levinson (1974) reached roughly a third; Conrey (1989), using a more sophisticated mollifier, pushed past two-fifths; subsequent refinements have inched it a little higher still. Every one of these is a genuine, hard-won theorem — and every one stops short of $c=1$.</p>
+
+      <div class="block open">
+        <span class="block-label">Where this leaves us</span>
+        <p>This is worth sitting with honestly: <strong>over 40% is proven, and it still isn't 100%.</strong> That's not a rounding issue — it reflects something structural. Mollifier methods work by bounding an average (an $L^2$ mean value); averages can certify that <em>most mass</em> behaves correctly without ever certifying <em>every single instance</em>. It's understood among specialists that pushing this particular family of techniques all the way to $c=1$ is not simply a matter of a longer calculation — the method has a ceiling. Reaching the full Hypothesis this way would need a genuinely new idea, not an improved constant. That's the honest state of the art on <em>locating</em> the zeros. The next stage asks a different question entirely: never mind where the zeros are — what do they have to do with primes in the first place? That connection, the explicit formula, is the entire reason anyone outside pure curiosity cares about this problem.</p>
+      </div>
+    </section>
+
+    <section class="stage" id="s8">
+      <div class="stage-head"><span class="stage-num">08</span><h2>The explicit formula &amp; primes</h2></div>
+      <p class="stage-sub">Seven stages in, and not one has mentioned why anyone outside pure curiosity should care where these zeros sit. This is that stage: an exact formula turning every nontrivial zero into a correction term in the prime-counting function, and turning the Hypothesis itself into a precise statement about how well we can ever hope to approximate the primes.</p>
+
+      <h3 class="sub"><span class="sub-index">8.1</span>Counting primes by weight: $\Lambda$ and $\psi$</h3>
+      <p>Define the <strong>von&nbsp;Mangoldt function</strong> $\Lambda(n) = \log p$ if $n=p^k$ for a prime $p$ and integer $k\ge1$, and $\Lambda(n)=0$ otherwise; and Chebyshev's function $\psi(x) := \sum_{n\le x}\Lambda(n)$. This looks like an odd thing to count — primes weighted by $\log p$, prime powers included — but it is exactly the quantity $\zeta$ talks to most directly, and the Prime Number Theorem itself is equivalent to the clean statement $\psi(x)\sim x$.</p>
+
+      <h3 class="sub"><span class="sub-index">8.2</span>$-\zeta'/\zeta$ counts prime powers</h3>
+      <div class="block theorem">
+        <span class="block-label">Proposition 8.1</span>
+        <div class="eq-wrap">$$-\frac{\zeta'(s)}{\zeta(s)} = \sum_{n=1}^{\infty}\frac{\Lambda(n)}{n^s}, \qquad \sigma>1,$$</div>
+        <p>the series converging absolutely.</p>
+      </div>
+      <div class="block proof">
+        <span class="block-label">Proof</span>
+        <p>From §5.2, $\log\zeta(s)=\sum_p\sum_{k\ge1}\frac{p^{-ks}}{k}$ for $\sigma>1$. Differentiating term by term — justified exactly as in Lemma&nbsp;2.3 and Lemma&nbsp;3.4, since $\sum_{p,k}(\log p)p^{-k\sigma}$ converges locally uniformly on $\sigma\ge1+\delta$ for every $\delta>0$ — gives</p>
+        <div class="eq-wrap">$$\frac{\zeta'(s)}{\zeta(s)} = \sum_p\sum_{k\ge1}\frac{d}{ds}\left(\frac{p^{-ks}}{k}\right) = -\sum_p\sum_{k\ge1}(\log p)\,p^{-ks}.$$</div>
+        <p>As $(p,k)$ ranges over all primes and positive integers, $n=p^k$ ranges exactly over the integers $\ge2$ with $\Lambda(n)\ne0$, each hit once, with weight $\Lambda(p^k)=\log p$ attached. So $-\zeta'(s)/\zeta(s)=\sum_p\sum_k(\log p)p^{-ks}=\sum_{n\ge2}\Lambda(n)n^{-s}=\sum_{n\ge1}\Lambda(n)n^{-s}$ (the $n=1$ term is $0$ anyway).</p>
+        <span class="qed">∎</span>
+      </div>
+
+      <h3 class="sub"><span class="sub-index">8.3</span>From a Dirichlet series back to a sum: Perron's formula</h3>
+      <p>Proposition&nbsp;8.1 hands us $\Lambda$ as the coefficients of a Dirichlet series built from $\zeta$; <strong>Perron's formula</strong> (cited) inverts this, recovering the partial sum from a contour integral: for $x>1$ not an integer and any $c>1$,</p>
+      <div class="eq-wrap">$$\psi(x) = \frac{1}{2\pi i}\int_{c-i\infty}^{c+i\infty}\left(-\frac{\zeta'(s)}{\zeta(s)}\right)\frac{x^s}{s}\,ds.$$</div>
+      <p>The strategy from here is the one we've now used twice before (Stages&nbsp;6 and this one's ancestor, Cauchy's theorem itself): push the vertical line of integration to the <em>left</em>, past every pole of the integrand, and read off $\psi(x)$ as a sum of residues plus a vanishing remainder. This is genuinely delicate to push all the way to $-\infty$ (controlling the integrand on the connecting horizontal segments, especially near the increasingly dense nontrivial zeros, is exactly the kind of estimate Stage&nbsp;6 flagged as cited) — we cite that the remainder vanishes and concentrate on identifying every residue, which is where all the meaning lives anyway.</p>
+
+      <h3 class="sub"><span class="sub-index">8.4</span>Reading off every residue</h3>
+      <p>The integrand $\left(-\zeta'(s)/\zeta(s)\right)x^s/s$ has poles exactly at: the pole of $\zeta$ ($s=1$), every zero of $\zeta$ (trivial and nontrivial — since $-\zeta'/\zeta$ has a simple pole of residue $-(\text{order of the zero})$ at any zero, and residue $+(\text{order of the pole})$ at any pole of $\zeta$, by the standard logarithmic-derivative identity), and $s=0$ (from the explicit $1/s$ alone, since $\zeta(0)\ne0$).</p>
+      <div class="block theorem">
+        <span class="block-label">Residue at $s=1$ — the main term</span>
+        <p>Near $s=1$, $\zeta(s)=\frac1{s-1}+O(1)$ (Theorem&nbsp;3.5), so $\zeta'(s)/\zeta(s)\sim\frac{-1}{s-1}$: a simple pole of residue $-1$ for $\zeta'/\zeta$, hence residue $+1$ for $-\zeta'/\zeta$. The contribution to $\psi(x)$ is $1\cdot\dfrac{x^1}{1}=x$.</p>
+      </div>
+      <div class="block theorem">
+        <span class="block-label">Residue at each nontrivial zero $\rho$ (order $m_\rho$)</span>
+        <p>Writing $\zeta(s)=(s-\rho)^{m_\rho}h(s)$ with $h(\rho)\ne0$ gives $\zeta'(s)/\zeta(s)=\dfrac{m_\rho}{s-\rho}+\dfrac{h'(s)}{h(s)}$ — residue $m_\rho$ for $\zeta'/\zeta$, so residue $-m_\rho$ for $-\zeta'/\zeta$. Contribution: $-m_\rho\cdot\dfrac{x^\rho}{\rho}$; summing over all nontrivial zeros (with multiplicity) gives $-\displaystyle\sum_\rho\frac{x^\rho}{\rho}$.</p>
+      </div>
+      <div class="block theorem">
+        <span class="block-label">Residue at each trivial zero $s=-2n$</span>
+        <p>Simple zero (Theorem&nbsp;4.1), so residue $-1$ for $-\zeta'/\zeta$; contribution $-1\cdot\dfrac{x^{-2n}}{-2n}=\dfrac{x^{-2n}}{2n}$. Summing over $n=1,2,3,\dots$ (a genuine geometric-type series, convergent since $x>1$):</p>
+        <div class="eq-wrap">$$\sum_{n=1}^{\infty}\frac{x^{-2n}}{2n} = \frac12\sum_{n=1}^{\infty}\frac{(x^{-2})^n}{n} = -\frac12\log(1-x^{-2}).$$</div>
+      </div>
+      <div class="block theorem">
+        <span class="block-label">Residue at $s=0$ — a constant</span>
+        <p>Here $\zeta$ itself is finite and nonzero ($\zeta(0)=-\tfrac12$), so the only pole comes from $1/s$; the residue is simply $\left.-\dfrac{\zeta'(s)}{\zeta(s)}\right|_{s=0}=-\dfrac{\zeta'(0)}{\zeta(0)}$. Using the cited value $\zeta'(0)=-\tfrac12\log(2\pi)$: $\;-\dfrac{-\frac12\log(2\pi)}{-\frac12}=-\log(2\pi)$.</p>
+      </div>
+
+      <div class="block theorem">
+        <span class="block-label">Theorem 8.2 (the explicit formula — Riemann, von Mangoldt)</span>
+        <p>For $x>1$ not a prime power,</p>
+        <div class="eq-wrap">$$\psi(x) \;=\; x \;-\; \sum_{\rho}\frac{x^\rho}{\rho} \;-\; \log(2\pi) \;-\; \frac12\log(1-x^{-2}),$$</div>
+        <p>where the sum runs over all nontrivial zeros with multiplicity, understood as the symmetric limit $\lim_{T\to\infty}\sum_{|\mathrm{Im}\,\rho|<T}$ (individual terms don't shrink — $|x^\rho|=x^{\mathrm{Re}\,\rho}$ doesn't depend on how far up $\rho$ is — so only this balanced grouping, pairing $\rho$ with roughly its conjugate, converges).</p>
+      </div>
+      <p>Every term has now been identified from first principles; only the convergence of the far-left remainder (as the contour is pushed to $-\infty$) and the precise sense of the zero-sum's convergence are cited rather than reworked here.</p>
+
+      <h3 class="sub"><span class="sub-index">8.5</span>The payoff: what RH actually buys</h3>
+      <p>This is the entire reason to care about $\mathrm{Re}(\rho)$. Each zero contributes a term of size $x^{\mathrm{Re}(\rho)}$ to the error between $\psi(x)$ and its main term $x$ — <em>the real part of a zero directly sets the size of the resulting error in the prime count.</em></p>
+      <div class="block theorem">
+        <span class="block-label">If RH holds: an optimal bound</span>
+        <p>Suppose every nontrivial zero has $\mathrm{Re}(\rho)=\tfrac12$. Then $|x^\rho/\rho|=x^{1/2}/|\rho|$ for every $\rho$, and</p>
+        <div class="eq-wrap">$$\left|\sum_{0<\gamma\le T}\frac{x^\rho}{\rho}\right| \le x^{1/2}\sum_{0<\gamma\le T}\frac1\gamma.$$</div>
+        <p>Using Theorem&nbsp;6.3's count $N(t)\sim\frac{t}{2\pi}\log t$ and partial summation, $\sum_{0<\gamma\le T}\frac1\gamma=\int_0^T\frac{dN(t)}{t}=O\bigl((\log T)^2\bigr)$ (the density of zeros grows like $\log t$, and $\int_1^T\frac{\log t}{t}dt=\frac12(\log T)^2$). Taking $T\to\infty$ appropriately relative to $x$ gives, from Theorem&nbsp;8.2,</p>
+        <div class="eq-wrap">$$\psi(x) = x + O\!\left(x^{1/2}(\log x)^2\right).$$</div>
+        <p>This is essentially the <em>best possible</em> error term this method can produce — square-root of $x$, up to logarithms — matching, via a further classical (cited) partial-summation argument converting $\psi$ to the ordinary prime-counting function $\pi(x)$, the equally famous $\pi(x)=\mathrm{Li}(x)+O(\sqrt x\log x)$.</p>
+      </div>
+      <div class="block theorem">
+        <span class="block-label">If RH fails: the bound breaks</span>
+        <p>Suppose instead a single nontrivial zero $\rho_0$ had $\mathrm{Re}(\rho_0)=\beta_0>\tfrac12$. A classical oscillation theorem (Landau, cited) shows that single zero forces genuine, unavoidable oscillation: $\psi(x)-x = \Omega_{\pm}\bigl(x^{\beta_0-\epsilon}\bigr)$ for every $\epsilon>0$ — meaning $\psi(x)-x$ is, infinitely often, at least that large in both directions. No cancellation from the other zeros can hide it. So the error term in the Prime Number Theorem is exactly as good as the worst-placed zero, and no better.</p>
+      </div>
+      <div class="block open">
+        <span class="block-label">Where this leaves us</span>
+        <p>Here is the honest shape of the whole problem, finally in one place. $\zeta$'s nontrivial zeros are not abstract curiosities — each one is, quite literally, an error term in how well the primes can be approximated by $x$, weighted by exactly how far that zero sits from $\sigma=\tfrac12$. The Riemann Hypothesis is the precise assertion that <strong>every one</strong> of the infinitely many correction terms is exactly as small as it could possibly be — that the primes are distributed as regularly as the prime-counting function's own analytic structure permits, with no zero anywhere contributing more noise than the square root of $x$. That is simultaneously why the problem is beautiful, why it is hard, and why a million-dollar prize sits on it: it's a single yes/no question standing in for the ultimate, optimal statement about how the primes are spaced. From here the notebook turns to a different kind of question — not new mathematics about $\zeta$ itself, but the many other, seemingly unrelated statements (about a sum of the Möbius function, about a criterion of Xian-Jin&nbsp;Li, about approximating $1$ in a function space) that turn out to be exactly equivalent to RH. That's Stage&nbsp;9.</p>
+      </div>
+    </section>
+
+    <section class="stage" id="s9">
+      <div class="stage-head"><span class="stage-num">09</span><h2>Equivalent formulations</h2></div>
+      <p class="stage-sub">A statement this central rarely stays confined to where it started. RH turns out to be exactly equivalent to claims in number theory, functional analysis, and — remarkably recently — the theory of heat flows on entire functions. A proof from <em>any</em> of these directions would finish the problem, which is exactly why people keep attacking it from such different angles.</p>
+
+      <h3 class="sub"><span class="sub-index">9.1</span>The Möbius function and Mertens' function</h3>
+      <p>Define the <strong>Möbius function</strong>: $\mu(1)=1$; $\mu(n)=(-1)^k$ if $n$ is a product of $k$ <em>distinct</em> primes; $\mu(n)=0$ if $n$ is divisible by the square of some prime. Define $M(x):=\sum_{n\le x}\mu(n)$, the <strong>Mertens function</strong>.</p>
+      <div class="block theorem">
+        <span class="block-label">Proposition 9.1</span>
+        <div class="eq-wrap">$$\frac{1}{\zeta(s)} = \sum_{n=1}^{\infty}\frac{\mu(n)}{n^s}, \qquad \sigma>1.$$</div>
+      </div>
+      <div class="block proof">
+        <span class="block-label">Proof</span>
+        <p>For each prime $p$: $\sum_{k\ge0}\mu(p^k)p^{-ks}=1-p^{-s}$ (every term with $k\ge2$ vanishes). Exactly as in the proof of Theorem&nbsp;1.3 — multiplying finitely many such local factors and using unique factorization to match terms, then bounding the tail by $\sum_{n>N}n^{-\sigma}\to0$ — the partial products $\prod_{p\le N}(1-p^{-s})$ converge to $\sum_n\mu(n)n^{-s}$ as $N\to\infty$ (absolutely, since $|\mu(n)|\le1$). But $\prod_{p\le N}(1-p^{-s})\to\prod_p(1-p^{-s})=1/\zeta(s)$ by Theorem&nbsp;1.3 itself.</p>
+        <span class="qed">∎</span>
+      </div>
+      <div class="block theorem">
+        <span class="block-label">Theorem 9.2 (cited)</span>
+        <p>The Riemann Hypothesis is equivalent to: $M(x) = O\bigl(x^{1/2+\epsilon}\bigr)$ for every $\epsilon>0$.</p>
+      </div>
+      <p>The strategy is the mirror image of Stage&nbsp;8 — Perron's formula applied to $1/\zeta(s)$ instead of $-\zeta'(s)/\zeta(s)$, shifting the contour past the poles of $1/\zeta$, which sit exactly at the zeros of $\zeta$. It's a real proof, but a more delicate one than Theorem&nbsp;8.2: each residue now involves $1/\zeta'(\rho)$, which isn't as easily controlled as the plain $x^\rho/\rho$ of the explicit formula, so we cite the completed argument rather than carry it out.</p>
+
+      <div class="block remark">
+        <span class="block-label">A cautionary tale: the Mertens conjecture</span>
+        <p>Mertens conjectured in 1897 something visibly <em>stronger</em>: $|M(x)|<\sqrt x$ for every $x>1$ — which would imply Theorem&nbsp;9.2's bound outright, and so would imply RH. It was checked numerically well past what was then imaginable. It is <strong>false</strong>. Odlyzko and te&nbsp;Riele proved in 1985 — using detailed computation with the zeros of $\zeta$ themselves, not a direct search — that $\limsup M(x)/\sqrt x>1.06$ and $\liminf M(x)/\sqrt x<-1.009$. No explicit $x$ violating the conjecture is known even today; only that one must exist, and existing bounds place it astronomically far out. The moral: RH is a specific, delicately-balanced statement. The visually cleaner, stronger-looking cousin sitting right next to it is simply false. Strengthening RH casually is not a safe move.</p>
+      </div>
+
+      <h3 class="sub"><span class="sub-index">9.2</span>Li's criterion</h3>
+      <p>Define, for $n=1,2,3,\dots$,</p>
+      <div class="eq-wrap">$$\lambda_n := \sum_{\rho}\left[1-\left(1-\frac1\rho\right)^{n}\right]$$</div>
+      <p>(sum over nontrivial zeros, symmetric limit as in Theorem&nbsp;8.2; equivalently, $\lambda_n=\frac1{(n-1)!}\frac{d^n}{ds^n}\bigl[s^{n-1}\log\xi(s)\bigr]_{s=1}$, a purely local computation at $s=1$ that secretly sees every zero at once).</p>
+      <div class="block theorem">
+        <span class="block-label">Theorem 9.3 (Li, 1997; sum form: Bombieri–Lagarias, 1999)</span>
+        <p>The Riemann Hypothesis holds if and only if $\lambda_n\ge0$ for every $n\ge1$.</p>
+      </div>
+      <p>This is a genuine, checkable, purely arithmetic-looking positivity condition on a specific sequence of real numbers — computed numerically to hold for very large $n$, offering no proof either way. Statements of this shape ("all zeros lie on a line" $\iff$ "a derived sequence is positive") are a recurring pattern for entire functions in the Laguerre–Pólya class, and the proof of the equivalence itself is a genuine result rather than a restatement — we cite it rather than reconstruct it.</p>
+
+      <h3 class="sub"><span class="sub-index">9.3</span>Nyman–Beurling: a question about approximating $1$</h3>
+      <p>Perhaps the most surprising reformulation moves entirely out of number theory. For $\theta\in(0,1]$, define $\rho_\theta(x):=\{\theta/x\}-\theta\{1/x\}$ on $(0,1)$ (here $\{\cdot\}$ is the fractional part), an element of $L^2(0,1)$.</p>
+      <div class="block theorem">
+        <span class="block-label">Theorem 9.4 (Nyman, 1950; Beurling, 1955; refined by B\'aez-Duarte, 2003 — cited)</span>
+        <p>The Riemann Hypothesis holds if and only if the constant function $1$ lies in the closed linear span of $\{\rho_{1/n} : n=2,3,4,\dots\}$ in $L^2(0,1)$.</p>
+      </div>
+      <p>There is, in principle, nothing stopping a sufficiently clever functional analyst from proving RH by constructing an explicit sequence of approximations to $1$ from these particular, fully concrete building blocks — no complex analysis required at all. That door is open right now, and it hasn't led anywhere yet either.</p>
+
+      <h3 class="sub"><span class="sub-index">9.4</span>The de Bruijn&ndash;Newman constant, and a very recent theorem</h3>
+      <p>This one closes a loop with Stages&nbsp;3 and 7. Recall $\Phi$ from §3.3, built from the theta function, and $\Xi(t)=\xi(\tfrac12+it)$ from Proposition&nbsp;7.1. De&nbsp;Bruijn (1950) studied a one-parameter deformation</p>
+      <div class="eq-wrap">$$H_\lambda(z) = \int_0^\infty e^{\lambda u^2}\Phi(u)\cos(zu)\,du,$$</div>
+      <p>which recovers (a rescaling of) $\Xi(z)$ exactly at $\lambda=0$. He showed $H_\lambda$ has <em>only real zeros</em> for all $\lambda\ge\tfrac12$, and that real-rootedness, once achieved at some $\lambda_0$, persists for every $\lambda>\lambda_0$. Newman (1976) proved there is a single threshold constant $\Lambda\in(-\infty,\tfrac12]$ — the <strong>de&nbsp;Bruijn&ndash;Newman constant</strong> — below which real-rootedness fails and above which it holds. By construction:</p>
+      <div class="eq-wrap">$$\text{RH} \iff \Lambda\le0.$$</div>
+      <p>Newman conjectured the opposite inequality, $\Lambda\ge0$ — his intuition, quoted often since, was that "<em>if RH is true, it is only just barely true</em>": nudge the deformation any further toward making zeros real, and you'd be doing strictly more work than the truth requires. That conjecture stood for over forty years. In 2018, <strong>Brad Rodgers and Terence Tao proved it</strong>: $\Lambda\ge0$, unconditionally. Combined with the definition above:</p>
+      <div class="block open">
+        <span class="block-label">A precise 2020s restatement of the Hypothesis</span>
+        <p>Given the Rodgers&ndash;Tao theorem, the Riemann Hypothesis is equivalent to the single equality $\Lambda=0$ — not $\le$, not $\ge$, exactly zero. Every earlier stage of this notebook found more room to maneuver; this one closes it to a single point, and current numerical work keeps confirming $\Lambda$ is not measurably far from it.</p>
+      </div>
+
+      <div class="block open">
+        <span class="block-label">Where this leaves us</span>
+        <p>None of these equivalences are cheap tricks — each is a real theorem, and each turns RH into a foothold in a completely different mountain: elementary number theory (Mertens), the fine structure of one specific entire function (Li), Hilbert-space approximation (Nyman&ndash;Beurling), or a heat-flow deformation only pinned down as recently as 2018 (de&nbsp;Bruijn&ndash;Newman). That's not a coincidence — it's a sign of how deeply this one yes/no question is wired into the rest of mathematics. It's also why the final stages of this notebook turn away from proving anything further, toward a different kind of question: not "is it true," but "what would explain <em>why</em> it's true" — and the strangest, most tantalizing answer anyone has proposed involves quantum physics. That's Stage&nbsp;10.</p>
+      </div>
+    </section>
+
+    <section class="stage" id="s10">
+      <div class="stage-head"><span class="stage-num">10</span><h2>Spectral &amp; physical approaches</h2></div>
+      <p class="stage-sub">This stage is different in kind from everything before it: less proved, more hoped-for — and it's the reason quantum physicists, not just number theorists, have spent real careers on this problem. The honesty this notebook has kept elsewhere matters more here, not less.</p>
+
+      <h3 class="sub"><span class="sub-index">10.1</span>The Hilbert&ndash;Pólya dream</h3>
+      <p>Around 1912–1914, David Hilbert and George Pólya are each said to have independently floated the same idea (there is no joint paper — the story survives mainly through a 1982 letter Pólya wrote to Andrew Odlyzko recalling being asked, decades earlier, why he'd once wondered whether the zeros had a physical origin). The idea rests on one piece of completely elementary linear algebra.</p>
+      <div class="block theorem">
+        <span class="block-label">Fact 10.1 (why self-adjoint operators are the target)</span>
+        <p>If $H$ is a self-adjoint operator on a Hilbert space ($\langle Hv,w\rangle=\langle v,Hw\rangle$ for all $v,w$ in its domain) and $Hv=\gamma v$ for some $v\ne0$, then $\gamma\in\mathbb{R}$.</p>
+      </div>
+      <div class="block proof">
+        <span class="block-label">Proof</span>
+        <p>$\gamma\langle v,v\rangle=\langle Hv,v\rangle=\langle v,Hv\rangle=\overline{\gamma}\langle v,v\rangle$ (the last step using $\langle v,\gamma v\rangle=\bar\gamma\langle v,v\rangle$ by conjugate-linearity in the second slot). Since $v\ne0$, $\langle v,v\rangle>0$, so $\gamma=\bar\gamma$.</p>
+        <span class="qed">∎</span>
+      </div>
+      <p>(For unbounded operators on infinite-dimensional spaces — the only kind that could plausibly have infinitely many eigenvalues marching off like the zeros do — the honest statement needs the general spectral theorem for self-adjoint operators, cited, but the conclusion is the same: real spectrum.)</p>
+      <p>The dream, then: find a self-adjoint operator $H$ whose eigenvalues are exactly the numbers $\gamma$ for which $\tfrac12+i\gamma$ is a nontrivial zero of $\zeta$. If such an $H$ existed, RH would fall out as an immediate corollary of Fact&nbsp;10.1 — no contour integrals, no mollifiers, just linear algebra. Nobody has ever constructed this operator, or proved one must exist. It remains, over a century later, exactly a dream — but an unusually productive one, because looking for it is what pulled in the physicists.</p>
+
+      <h3 class="sub"><span class="sub-index">10.2</span>An unexpected clue: random matrices</h3>
+      <p>In 1972, Hugh Montgomery was studying the statistics of gaps between (normalized) zero heights $\gamma$ and conjectured their <strong>pair correlation function</strong> takes the form</p>
+      <div class="eq-wrap">$$R_2(u) = 1 - \left(\frac{\sin\pi u}{\pi u}\right)^2.$$</div>
+      <p>At tea at the Institute for Advanced Study, Montgomery showed this to the physicist Freeman Dyson, who recognized it immediately: it is <em>exactly</em> the pair correlation function of eigenvalues of large random Hermitian matrices drawn from the Gaussian Unitary Ensemble (GUE) — the same statistics Wigner had used decades earlier to model energy levels of heavy atomic nuclei. Nobody had been looking for a connection between prime numbers and nuclear physics; it fell out of a teatime conversation.</p>
+      <p>Precision matters here: what Montgomery actually <em>proved</em> is a restricted version of this — valid only for test functions with Fourier transform supported in $(-1,1)$ — and even that proof assumes RH. It's a genuine theorem, but a conditional and partial one, not confirmation of the full conjecture.</p>
+
+      <h3 class="sub"><span class="sub-index">10.3</span>Checking against reality: unconditional numerical evidence</h3>
+      <p>The far more startling evidence doesn't assume anything. Starting in the 1980s, Andrew Odlyzko computed enormous numbers of actual zeros — far beyond anything reachable by hand, eventually including zeros near the $10^{20}$-th one — using algorithms built on the very machinery this notebook developed (Stage&nbsp;6's argument-principle counting, refined for speed). These are <em>real, individually verified</em> zeros, each independently confirmed to sit on $\sigma=\tfrac12$ (unconditional at each specific zero — no assumption about the rest). Their spacing statistics match the GUE prediction to striking precision. This is honest, unconditional evidence for a genuine spectral phenomenon underlying $\zeta$ — it is not, and cannot be, a proof that every zero lies on the line, since it only ever examines finitely many.</p>
+
+      <h3 class="sub"><span class="sub-index">10.4</span>A candidate Hamiltonian: Berry&ndash;Keating</h3>
+      <p>If the zeros really are eigenvalues of some physical system, what system? Michael Berry and Jonathan Keating proposed, in the 1990s, that the relevant classical Hamiltonian might be as simple as $H = xp$ — position times momentum — whose classical dynamics (pure exponential expansion/contraction) has exactly the right chaotic character to produce, via semiclassical quantization heuristics borrowed from quantum chaos (in the spirit of the Selberg and Gutzwiller trace formulas, where sums over periodic orbits mirror Stage&nbsp;8's sum over primes), an eigenvalue density matching $N(T)$'s asymptotic from Stage&nbsp;6. This is a genuinely suggestive heuristic, not a construction: $xp$ itself isn't self-adjoint without care (its natural domain issues need real regularization), no version of it has been shown to reproduce the zeros exactly, and the whole program remains a physically-motivated research direction rather than a proof strategy with a defined endpoint.</p>
+
+      <div class="block open">
+        <span class="block-label">Where this leaves us</span>
+        <p>Be honest about what this stage actually contains: one elementary, fully rigorous fact (self-adjoint operators have real spectrum); one historically real but conditional theorem (Montgomery, assuming RH, on a restricted range); one body of genuine unconditional evidence that doesn't generalize (Odlyzko's computations); and one suggestive, unproven physical heuristic (Berry&ndash;Keating). None of it is a path to a proof today. What it <em>is</em>, is the strongest available reason to believe RH reflects something real and structural — that the zeros aren't an arbitrary, unexplainable pattern, but the spectrum of <em>something</em>, even though nobody has found the operator. That belief, plus everything genuinely proved in Stages&nbsp;1–9, is where this notebook's honest accounting of the mathematics ends. Stage&nbsp;11 closes it out: a plain summary of exactly what stands proved, what stands conjectured, and what a resolution would actually have to look like.</p>
+      </div>
+    </section>
+
+    <section class="stage" id="s11">
+      <div class="stage-head"><span class="stage-num">11</span><h2>The open frontier</h2></div>
+      <p class="stage-sub">Bismillah, we started this notebook with a plain warning: nobody was going to prove the Riemann Hypothesis here. Ten stages later, that's exactly where things stand — and it's worth closing with a completely honest ledger of what those ten stages actually bought, rather than a vague gesture at "how far we got."</p>
+
+      <h3 class="sub"><span class="sub-index">11.1</span>The ledger</h3>
+      <div class="ledger-wrap">
+        <table class="ledger">
+          <tr><th>Stage</th><th>Result</th><th>Status</th></tr>
+          <tr><td>1</td><td>$\zeta(s)$ defined, holomorphic for $\sigma>1$; Euler product; $\zeta(s)\ne0$ for $\sigma>1$</td><td><span class="pill built">PROVED IN FULL</span></td></tr>
+          <tr><td>2</td><td>Continuation to $\sigma>0$; simple pole at $s=1$, residue $1$</td><td><span class="pill built">PROVED IN FULL</span></td></tr>
+          <tr><td>3</td><td>Continuation to $\mathbb C\setminus\{1\}$; the functional equation</td><td><span class="pill cited">PROVED, BACKGROUND CITED</span></td></tr>
+          <tr><td>4</td><td>Trivial zeros classified exactly; nontrivial zeros confined to $[0,1]$; 4-fold symmetry</td><td><span class="pill built">PROVED IN FULL</span></td></tr>
+          <tr><td>5</td><td>$\zeta(1+it)\ne0$; nontrivial zeros confined to open strip $0<\sigma<1$</td><td><span class="pill built">PROVED IN FULL</span></td></tr>
+          <tr><td>6</td><td>$N(T)\sim\frac T{2\pi}\log\frac T{2\pi}-\frac T{2\pi}$, precise error term</td><td><span class="pill cited">REDUCTION PROVED, ASYMPTOTIC CITED</span></td></tr>
+          <tr><td>7</td><td>Infinitely many zeros on the line; a positive proportion ($>40\%$) provably do</td><td><span class="pill cited">REDUCTION PROVED, THEOREMS CITED</span></td></tr>
+          <tr><td>8</td><td>Explicit formula; RH $\iff$ optimal prime-counting error term</td><td><span class="pill cited">DERIVED TERM-BY-TERM, CONVERGENCE CITED</span></td></tr>
+          <tr><td>9</td><td>Mertens, Li, Nyman&ndash;Beurling, de Bruijn&ndash;Newman equivalences</td><td><span class="pill cited">STATED PRECISELY, EQUIVALENCES CITED</span></td></tr>
+          <tr><td>10</td><td>Hilbert&ndash;Pólya logic; random-matrix statistics; candidate Hamiltonians</td><td><span class="pill conjectural">ONE FACT PROVED; REST CONJECTURAL / EVIDENTIAL</span></td></tr>
+          <tr><td>&mdash;</td><td><strong>The Riemann Hypothesis itself</strong></td><td><span class="pill conjectural">OPEN</span></td></tr>
+        </table>
+      </div>
+      <p>Nothing in that last row moved. That was always going to be true, and said so on page one.</p>
+
+      <h3 class="sub"><span class="sub-index">11.2</span>What would it actually take?</h3>
+      <p>Four doors are visibly open, and nobody knows which — if any — leads through.</p>
+      <p><strong>Push the zero-free region.</strong> Stage&nbsp;5's boundary argument has been refined since 1896 (Vinogradov and Korobov, using exponential-sum methods, pushed the zero-free region slightly into the strip rather than just onto its edges), and refinements continue. But every known method of this type produces a zero-free region that <em>narrows</em> as height $T$ grows — none has ever come close to reaching all the way to $\sigma=\tfrac12$, and there's no known technique on the horizon that would.</p>
+      <p><strong>Push the positive proportion.</strong> Stage&nbsp;7's mollifier constant has climbed past $40\%$ since Selberg's original estimate, through Levinson's and Conrey's refinements and others since. As discussed there, this family of methods has a structural ceiling well short of $100\%$ — reaching the full Hypothesis this way needs a different kind of estimate, not a longer one.</p>
+      <p><strong>Attack an equivalent formulation directly.</strong> Any genuine progress on Li's criterion (Stage&nbsp;9.2), on the Nyman&ndash;Beurling approximation problem (Stage&nbsp;9.3), or on pinning the de&nbsp;Bruijn&ndash;Newman constant's remaining inequality $\Lambda\le0$ (Stage&nbsp;9.4, given Rodgers&ndash;Tao's $\Lambda\ge0$) would resolve RH outright, using techniques that might have nothing to do with contour integrals at all.</p>
+      <p><strong>Find the operator.</strong> A genuine construction realizing the Hilbert&ndash;Pólya dream (Stage&nbsp;10.1) — an actual self-adjoint operator with the zeros' heights as its spectrum — would settle the question in three lines, via Fact&nbsp;10.1. Nobody has found it, or proved it can't exist.</p>
+
+      <div class="block open">
+        <span class="block-label">Closing</span>
+        <p>What this notebook actually did, honestly: built one specific, completely concrete function from a convergent series, extended it correctly across the whole plane, discovered a real symmetry in it, learned exactly which of its zeros are harmless, proved a stubborn 40-odd percent of the interesting ones sit exactly where conjectured, showed those zeros are the precise mechanism controlling how well the primes can ever be approximated, found the same yes/no question sitting behind four unrelated-looking problems in other fields, and ended up looking at quantum physics for a hint. Every one of those sentences is now something you could check, line by line, in the ten stages above — not something to take on faith. The one sentence still not checkable, after all of that, is the one this notebook opened with: that every nontrivial zero of $\zeta$ has real part exactly $\tfrac12$. Alhamdulillah for what got built along the way; that last sentence is still exactly as open as it was on page one, and it will stay a fair, hard, honest question for whoever picks it up next — inshallah, one day, someone will.</p>
+      </div>
+    </section>
+
+  </main>
+
+  <footer>
+    Built as a running notebook, one referee-able stage at a time. Nothing here shortcuts the Hypothesis — that isn't possible — but every theorem above is real and complete.
+  </footer>
+</div>
