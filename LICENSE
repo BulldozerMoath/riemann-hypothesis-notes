@@ -1,0 +1,13 @@
+This repository is dual-licensed, as required for open educational materials.
+
+  Code     — MIT License.  See LICENSE-CODE.
+             Applies to: src/, tests/, scripts/, pyproject.toml,
+             and the code cells of notebooks/.
+
+  Content  — Creative Commons Attribution 4.0 International (CC BY 4.0).
+             See LICENSE-CONTENT.
+             Applies to: docs/, site/, README.md, paper.md, outputs/,
+             and the prose cells of notebooks/.
+
+Both are open licenses under the Open Definition. Attribution is required for
+the content; the MIT License states its own terms for the code.

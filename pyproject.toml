@@ -1,0 +1,43 @@
+[build-system]
+requires = ["hatchling>=1.21"]
+build-backend = "hatchling.build"
+
+[project]
+name = "critical-line"
+version = "0.5.0"
+description = "Educational and numerical tooling for the Riemann zeta function and the Riemann Hypothesis. Numerical exploration only; proves nothing about RH."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { file = "LICENSE" }
+authors = [{ name = "Moath Alshannaq" }]
+keywords = ["riemann", "zeta", "number-theory", "mpmath", "numerical-analysis"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Education",
+  "Intended Audience :: Science/Research",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Scientific/Engineering :: Mathematics",
+]
+dependencies = [
+  "mpmath>=1.3.0",
+  "numpy>=1.26",
+  "matplotlib>=3.8",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=7.0"]
+
+[project.urls]
+Homepage = "https://github.com/BulldozerMoath/riemann-hypothesis-notes"
+Documentation = "https://github.com/BulldozerMoath/riemann-hypothesis-notes/tree/main/docs"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/critical_line"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
